@@ -1,0 +1,73 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+.venv/
+venv/
+env/
+.env
+
+# Byte-compiled / optimized / DLL files
+*.pyc
+*.pyd
+
+# SQLite development database
+*.db
+*.sqlite3
+
+# Alembic
+alembic/
+
+# Machine learning model files (generated at runtime)
+models/*.joblib
+models/*.pkl
+models/*.model
+
+# Node.js
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.lcov
+.pytest_cache/
+.nyc_output/
+
+# Build artifacts
+*.egg
+.eggs/
+
+# Data directories (runtime only, not source)
+data/pcaps/
+data/logs/
+data/uploads/
+
+# Secrets and configuration
+.env
+*.pem
+*.key
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Podman / Docker
+.podman/
