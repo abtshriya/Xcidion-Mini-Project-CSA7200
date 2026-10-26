@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Eye, EyeOff, Lock, User, AlertCircle } from 'lucide-react';
+import { Shield, Eye, EyeOff, Lock, User, AlertCircle, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const LoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const [username, setUsername] = useState('analyst');
-  const [password, setPassword] = useState('Analyst@Xcidion2026');
+  const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('Admin@Xcidion2026');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -19,8 +19,12 @@ export const LoginPage = () => {
     setLoading(true);
 
     try {
-      await login(username, password);
-      navigate('/');
+      const userData = await login(username, password);
+      if (userData?.role === 'viewer') {
+        navigate('/user');
+      } else {
+        navigate('/admin');
+      }
     } catch (err) {
       setError(err.message || 'Login failed. Please check credentials.');
     } finally {
@@ -41,45 +45,44 @@ export const LoginPage = () => {
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: 'var(--bg-main)',
-        padding: '20px'
+        padding: '24px',
+        position: 'relative'
       }}
     >
       <div
+        className="glass-panel"
         style={{
           width: '100%',
-          maxWidth: '440px',
-          backgroundColor: 'var(--bg-card)',
-          border: '1px solid var(--border-color)',
-          borderRadius: 'var(--border-radius)',
-          boxShadow: 'var(--shadow-elevated)',
-          padding: '36px 32px'
+          maxWidth: '460px',
+          padding: '36px 32px',
+          boxShadow: 'var(--glass-shadow-lg)'
         }}
       >
         {/* Branding */}
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <div
             style={{
-              width: '56px',
-              height: '56px',
+              width: '54px',
+              height: '54px',
               margin: '0 auto 16px auto',
-              borderRadius: '14px',
+              borderRadius: '12px',
               background: 'linear-gradient(135deg, var(--xc-violet), var(--xc-aqua))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: 'var(--glow-violet)'
+              boxShadow: '0 8px 24px rgba(114, 110, 255, 0.35)'
             }}
           >
-            <Shield size={32} color="var(--xc-obsidian)" />
+            <Shield size={30} color="var(--xc-obsidian)" />
           </div>
           <h1 style={{ fontSize: '1.6rem', fontWeight: '800', letterSpacing: '1px', color: 'var(--text-primary)', marginBottom: '4px' }}>
             XCIDION
           </h1>
-          <p style={{ fontSize: '0.82rem', color: 'var(--xc-aqua)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
-            Explainable Network Intrusion Detection
+          <p style={{ fontSize: '0.80rem', color: 'var(--xc-aqua)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+            Explainable Network Intrusion Detection System
           </p>
           <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '6px' }}>
-            "From Raw Network Traffic to an Explainable Attack Story."
+            Two Operational Dashboards: Admin Operations & User Monitoring
           </p>
         </div>
 
@@ -91,9 +94,9 @@ export const LoginPage = () => {
               gap: '10px',
               padding: '10px 14px',
               borderRadius: '6px',
-              backgroundColor: 'var(--sev-critical-bg)',
-              border: '1px solid var(--sev-critical)',
-              color: 'var(--sev-critical)',
+              backgroundColor: 'rgba(255, 77, 103, 0.15)',
+              border: '1px solid #FF4D67',
+              color: '#FF4D67',
               fontSize: '0.84rem',
               marginBottom: '20px'
             }}
@@ -103,9 +106,9 @@ export const LoginPage = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+            <label style={{ display: 'block', fontSize: '0.80rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '6px' }}>
               Username
             </label>
             <div style={{ position: 'relative' }}>
@@ -122,7 +125,7 @@ export const LoginPage = () => {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+            <label style={{ display: 'block', fontSize: '0.80rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '6px' }}>
               Password
             </label>
             <div style={{ position: 'relative' }}>
@@ -144,7 +147,8 @@ export const LoginPage = () => {
                   top: '50%',
                   transform: 'translateY(-50%)',
                   background: 'none',
-                  color: 'var(--text-muted)'
+                  color: 'var(--text-muted)',
+                  cursor: 'pointer'
                 }}
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -155,66 +159,91 @@ export const LoginPage = () => {
           <button
             type="submit"
             disabled={loading}
+            className="btn-primary"
             style={{
-              marginTop: '8px',
+              marginTop: '6px',
               padding: '12px',
-              borderRadius: '6px',
-              backgroundColor: 'var(--xc-violet)',
-              color: 'var(--text-primary)',
-              fontWeight: '600',
-              fontSize: '0.92rem',
-              boxShadow: 'var(--glow-violet)',
-              transition: 'var(--transition)'
+              justifyContent: 'center',
+              fontSize: '0.92rem'
             }}
           >
             {loading ? 'Authenticating...' : 'Sign In to Operations'}
           </button>
         </form>
 
-        {/* Evaluation Credentials Shortcut */}
-        <div style={{ marginTop: '28px', paddingTop: '18px', borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
-          <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginBottom: '10px' }}>
-            Evaluation Accounts:
+        {/* Evaluation Accounts Quick Select */}
+        <div style={{ marginTop: '24px', paddingTop: '18px', borderTop: '1px solid var(--glass-border)' }}>
+          <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginBottom: '10px', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Quick Demo Accounts:
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <button
-              onClick={() => handleQuickFill('analyst', 'Analyst@Xcidion2026')}
-              style={{
-                fontSize: '0.74rem',
-                padding: '4px 10px',
-                borderRadius: '4px',
-                backgroundColor: 'var(--bg-elevated)',
-                border: '1px solid var(--border-color)',
-                color: 'var(--xc-aqua)'
-              }}
-            >
-              Analyst
-            </button>
-            <button
+              type="button"
               onClick={() => handleQuickFill('admin', 'Admin@Xcidion2026')}
               style={{
-                fontSize: '0.74rem',
-                padding: '4px 10px',
-                borderRadius: '4px',
-                backgroundColor: 'var(--bg-elevated)',
-                border: '1px solid var(--border-color)',
-                color: 'var(--xc-violet)'
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '8px 12px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(114, 110, 255, 0.1)',
+                border: '1px solid rgba(114, 110, 255, 0.3)',
+                color: 'var(--xc-violet)',
+                cursor: 'pointer',
+                textAlign: 'left'
               }}
             >
-              Admin
+              <div>
+                <strong style={{ fontSize: '0.82rem' }}>Administrator</strong>
+                <div style={{ fontSize: '0.70rem', color: 'var(--text-muted)' }}>Admin Dashboard (Full control, scanning, rules)</div>
+              </div>
+              <span style={{ fontSize: '0.70rem', color: 'var(--xc-aqua)', fontFamily: 'var(--font-mono)' }}>admin</span>
             </button>
+
             <button
+              type="button"
+              onClick={() => handleQuickFill('analyst', 'Analyst@Xcidion2026')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '8px 12px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(89, 255, 231, 0.08)',
+                border: '1px solid rgba(89, 255, 231, 0.25)',
+                color: 'var(--xc-aqua)',
+                cursor: 'pointer',
+                textAlign: 'left'
+              }}
+            >
+              <div>
+                <strong style={{ fontSize: '0.82rem' }}>Security Analyst</strong>
+                <div style={{ fontSize: '0.70rem', color: 'var(--text-muted)' }}>Admin Dashboard (Device investigation, alert triage)</div>
+              </div>
+              <span style={{ fontSize: '0.70rem', color: 'var(--xc-teal)', fontFamily: 'var(--font-mono)' }}>analyst</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => handleQuickFill('viewer', 'Viewer@Xcidion2026')}
               style={{
-                fontSize: '0.74rem',
-                padding: '4px 10px',
-                borderRadius: '4px',
-                backgroundColor: 'var(--bg-elevated)',
-                border: '1px solid var(--border-color)',
-                color: 'var(--text-muted)'
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '8px 12px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(8, 198, 172, 0.08)',
+                border: '1px solid rgba(8, 198, 172, 0.25)',
+                color: 'var(--xc-teal)',
+                cursor: 'pointer',
+                textAlign: 'left'
               }}
             >
-              Viewer
+              <div>
+                <strong style={{ fontSize: '0.82rem' }}>Standard User</strong>
+                <div style={{ fontSize: '0.70rem', color: 'var(--text-muted)' }}>User Dashboard (Basic monitoring, device status, reports)</div>
+              </div>
+              <span style={{ fontSize: '0.70rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>viewer</span>
             </button>
           </div>
         </div>

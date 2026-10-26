@@ -5,20 +5,10 @@ import { WebSocketProvider } from './context/WebSocketContext';
 import { AppLayout } from './components/layout/AppLayout';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
 
-// Pages (all are named exports)
+// Pages
 import { LoginPage } from './pages/LoginPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { LiveTrafficPage } from './pages/LiveTrafficPage';
-import { AlertsPage } from './pages/AlertsPage';
-import { IncidentsPage } from './pages/IncidentsPage';
-import { AttackDNAPage } from './pages/AttackDNAPage';
-import { ThreatTrajectoryPage } from './pages/ThreatTrajectoryPage';
-import { AnalyticsPage } from './pages/AnalyticsPage';
-import { DetectionRulesPage } from './pages/DetectionRulesPage';
-import { SensorsPage } from './pages/SensorsPage';
-import { DatasetsModelsPage } from './pages/DatasetsModelsPage';
-import { AuditLogsPage } from './pages/AuditLogsPage';
-import { SettingsPage } from './pages/SettingsPage';
+import { AdminDashboardPage } from './pages/AdminDashboardPage';
+import { UserDashboardPage } from './pages/UserDashboardPage';
 
 import './App.css';
 
@@ -49,7 +39,7 @@ const ProtectedRoute = ({ children }) => {
 
 // Route wrapper for login page to prevent authenticated users from re-logging in
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, role } = useAuth();
 
   if (loading) {
     return (
@@ -66,10 +56,19 @@ const PublicRoute = ({ children }) => {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={role === 'viewer' ? '/user' : '/admin'} replace />;
   }
 
   return children;
+};
+
+// Role-based root dashboard router
+const DashboardRouter = () => {
+  const { role } = useAuth();
+  if (role === 'viewer') {
+    return <UserDashboardPage />;
+  }
+  return <AdminDashboardPage />;
 };
 
 export default function App() {
@@ -97,21 +96,12 @@ export default function App() {
                 </ProtectedRoute>
               }
             >
-              <Route index element={<DashboardPage />} />
-              <Route path="traffic" element={<LiveTrafficPage />} />
-              <Route path="alerts" element={<AlertsPage />} />
-              <Route path="incidents" element={<IncidentsPage />} />
-              <Route path="attack-dna" element={<AttackDNAPage />} />
-              <Route path="trajectory" element={<ThreatTrajectoryPage />} />
-              <Route path="analytics" element={<AnalyticsPage />} />
-              <Route path="rules" element={<DetectionRulesPage />} />
-              <Route path="sensors" element={<SensorsPage />} />
-              <Route path="models" element={<DatasetsModelsPage />} />
-              <Route path="audit-logs" element={<AuditLogsPage />} />
-              <Route path="settings" element={<SettingsPage />} />
+              <Route index element={<DashboardRouter />} />
+              <Route path="admin" element={<AdminDashboardPage />} />
+              <Route path="user" element={<UserDashboardPage />} />
             </Route>
 
-            {/* Fallback */}
+            {/* Fallback to root */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </WebSocketProvider>

@@ -322,3 +322,81 @@ class AuditLogResponse(BaseModel):
     timestamp: datetime
     outcome: str
     metadata_json: Optional[Dict[str, Any]] = None
+
+# Approved Subnets
+class ApprovedSubnetCreate(BaseModel):
+    cidr: str
+    label: str
+    description: Optional[str] = None
+
+class ApprovedSubnetResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    cidr: str
+    label: str
+    description: Optional[str] = None
+    is_active: bool
+    created_at: datetime
+
+# Devices & Inventory
+class OpenPortInfo(BaseModel):
+    port: int
+    protocol: str = "TCP"
+    service: Optional[str] = "unknown"
+    state: str = "open"
+    banner: Optional[str] = None
+
+class DeviceResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    ip_address: str
+    mac_address: Optional[str] = None
+    hostname: Optional[str] = None
+    vendor: Optional[str] = None
+    os_hint: Optional[str] = None
+    status: str
+    risk_level: str
+    open_ports: List[Dict[str, Any]] = []
+    suspicious_indicators: List[str] = []
+    first_seen: datetime
+    last_seen: datetime
+    scan_source: str
+    metadata_json: Optional[Dict[str, Any]] = None
+
+class DeviceInvestigationResponse(BaseModel):
+    device: DeviceResponse
+    associated_alerts: List[Dict[str, Any]] = []
+    attack_dna_timeline: List[Dict[str, Any]] = []
+    threat_trajectory: Dict[str, Any] = {}
+    confirmed_events_count: int = 0
+    inferred_relations_count: int = 0
+
+# Network Scanning
+class ScanInitiateRequest(BaseModel):
+    subnet: str
+    scan_type: str = "standard"  # quick, standard, thorough
+
+class ScanJobResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    subnet: str
+    initiated_by: str
+    status: str
+    devices_found: int
+    open_ports_found: int
+    log_output: List[Dict[str, Any]] = []
+    created_at: datetime
+    completed_at: Optional[datetime] = None
+
+# Terminal Execution
+class TerminalCommandRequest(BaseModel):
+    command: str
+
+class TerminalCommandResponse(BaseModel):
+    command: str
+    output_lines: List[Dict[str, str]]  # [{"text": "...", "type": "info|warn|error|success|event"}]
+    timestamp: datetime
+

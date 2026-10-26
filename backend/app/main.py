@@ -23,6 +23,10 @@ from backend.app.api.v1.models import router as models_router
 from backend.app.api.v1.analytics import router as analytics_router
 from backend.app.api.v1.audit import router as audit_router
 from backend.app.api.v1.admin import router as admin_router
+from backend.app.api.v1.devices import router as devices_router
+from backend.app.api.v1.scanning import router as scanning_router
+from backend.app.api.v1.terminal import router as terminal_router
+
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("xcidion.main")
@@ -80,6 +84,10 @@ app.include_router(models_router, prefix=api_v1)
 app.include_router(analytics_router, prefix=api_v1)
 app.include_router(audit_router, prefix=api_v1)
 app.include_router(admin_router, prefix=api_v1)
+app.include_router(devices_router, prefix=api_v1)
+app.include_router(scanning_router, prefix=api_v1)
+app.include_router(terminal_router, prefix=api_v1)
+
 
 # Health Root Endpoint
 @app.get("/health")

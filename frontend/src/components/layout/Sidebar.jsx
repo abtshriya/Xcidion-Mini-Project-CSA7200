@@ -1,9 +1,9 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
-  ShieldAlert, Activity, AlertTriangle, GitCommit, Dna,
-  TrendingUp, BarChart3, Sliders, Radio, Database,
-  FileText, Settings, LogOut, ChevronLeft, ChevronRight, User
+  ShieldAlert, Activity, AlertTriangle, Radio, Server,
+  TrendingUp, Dna, BarChart3, Settings, LogOut, ChevronLeft, ChevronRight,
+  Terminal, Network, Eye, ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWebSocket } from '../../context/WebSocketContext';
@@ -11,28 +11,22 @@ import { useWebSocket } from '../../context/WebSocketContext';
 export const Sidebar = ({ collapsed, setCollapsed }) => {
   const { user, logout } = useAuth();
   const { status: wsStatus } = useWebSocket();
+  const navigate = useNavigate();
 
-  const navItems = [
-    { label: 'Overview', to: '/', icon: Activity },
-    { label: 'Live Traffic', to: '/traffic', icon: Radio },
-    { label: 'Alerts', to: '/alerts', icon: AlertTriangle },
-    { label: 'Incidents', to: '/incidents', icon: ShieldAlert },
-    { label: 'Attack DNA', to: '/attack-dna', icon: Dna },
-    { label: 'Threat Trajectory', to: '/trajectory', icon: TrendingUp },
-    { label: 'Analytics', to: '/analytics', icon: BarChart3 },
-    { label: 'Detection Rules', to: '/rules', icon: Sliders },
-    { label: 'Sensors', to: '/sensors', icon: GitCommit },
-    { label: 'Datasets & Models', to: '/models', icon: Database },
-    { label: 'Audit Logs', to: '/audit-logs', icon: FileText },
-    { label: 'Settings', to: '/settings', icon: Settings },
-  ];
+  const isAdminOrAnalyst = user?.role === 'admin' || user?.role === 'analyst';
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   return (
     <aside
       style={{
         width: collapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)',
-        backgroundColor: 'var(--bg-sidebar)',
-        borderRight: '1px solid var(--border-color)',
+        backgroundColor: 'rgba(10, 15, 23, 0.95)',
+        backdropFilter: 'var(--glass-blur)',
+        borderRight: '1px solid var(--glass-border)',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
@@ -54,7 +48,7 @@ export const Sidebar = ({ collapsed, setCollapsed }) => {
             alignItems: 'center',
             justifyContent: collapsed ? 'center' : 'space-between',
             padding: collapsed ? '0' : '0 18px',
-            borderBottom: '1px solid var(--border-color)'
+            borderBottom: '1px solid var(--glass-border)'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -70,7 +64,7 @@ export const Sidebar = ({ collapsed, setCollapsed }) => {
                 color: 'var(--xc-obsidian)',
                 fontWeight: '900',
                 fontSize: '1rem',
-                boxShadow: 'var(--glow-violet)'
+                boxShadow: '0 4px 12px rgba(114, 110, 255, 0.3)'
               }}
             >
               X
@@ -104,112 +98,157 @@ export const Sidebar = ({ collapsed, setCollapsed }) => {
         </div>
 
         {/* Navigation Items */}
-        <nav style={{ padding: '12px 8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
+        <nav style={{ padding: '14px 8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {!collapsed && (
+            <div style={{ fontSize: '0.68rem', fontWeight: '700', color: 'var(--text-muted)', padding: '4px 12px', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
+              DASHBOARD SELECTION
+            </div>
+          )}
+
+          {isAdminOrAnalyst ? (
+            <>
+              {/* Admin Dashboard */}
               <NavLink
-                key={item.to}
-                to={item.to}
+                to="/admin"
                 style={({ isActive }) => ({
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
                   padding: collapsed ? '10px 0' : '10px 14px',
                   justifyContent: collapsed ? 'center' : 'flex-start',
-                  borderRadius: '8px',
-                  color: isActive ? 'var(--xc-aqua)' : 'var(--text-secondary)',
-                  backgroundColor: isActive ? 'var(--bg-elevated)' : 'transparent',
-                  borderLeft: isActive ? '3px solid var(--xc-aqua)' : '3px solid transparent',
-                  boxShadow: isActive ? 'var(--shadow-raised)' : 'none',
+                  borderRadius: '6px',
+                  color: isActive ? '#FFFFFF' : 'var(--text-secondary)',
+                  backgroundColor: isActive ? 'rgba(114, 110, 255, 0.18)' : 'transparent',
+                  border: isActive ? '1px solid var(--glass-border-focus)' : '1px solid transparent',
                   textDecoration: 'none',
-                  fontSize: '0.88rem',
-                  fontWeight: isActive ? '600' : '400',
+                  fontSize: '0.86rem',
+                  fontWeight: isActive ? '700' : '500',
                   transition: 'var(--transition)'
                 })}
-                title={collapsed ? item.label : undefined}
+                title={collapsed ? 'Admin Dashboard' : undefined}
               >
-                <Icon size={18} />
-                {!collapsed && <span>{item.label}</span>}
+                <ShieldAlert size={18} color="var(--xc-violet)" />
+                {!collapsed && <span>Admin Dashboard</span>}
               </NavLink>
-            );
-          })}
+
+              {/* User Dashboard Preview */}
+              <NavLink
+                to="/user"
+                style={({ isActive }) => ({
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: collapsed ? '10px 0' : '10px 14px',
+                  justifyContent: collapsed ? 'center' : 'flex-start',
+                  borderRadius: '6px',
+                  color: isActive ? '#FFFFFF' : 'var(--text-secondary)',
+                  backgroundColor: isActive ? 'rgba(8, 198, 172, 0.18)' : 'transparent',
+                  border: isActive ? '1px solid var(--xc-teal)' : '1px solid transparent',
+                  textDecoration: 'none',
+                  fontSize: '0.86rem',
+                  fontWeight: isActive ? '700' : '500',
+                  transition: 'var(--transition)'
+                })}
+                title={collapsed ? 'User Dashboard' : undefined}
+              >
+                <Eye size={18} color="var(--xc-teal)" />
+                {!collapsed && <span>User Dashboard</span>}
+              </NavLink>
+            </>
+          ) : (
+            /* User Dashboard for standard users */
+            <NavLink
+              to="/user"
+              style={({ isActive }) => ({
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: collapsed ? '10px 0' : '10px 14px',
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                borderRadius: '6px',
+                color: isActive ? '#FFFFFF' : 'var(--text-secondary)',
+                backgroundColor: isActive ? 'rgba(8, 198, 172, 0.18)' : 'transparent',
+                border: isActive ? '1px solid var(--xc-teal)' : '1px solid transparent',
+                textDecoration: 'none',
+                fontSize: '0.86rem',
+                fontWeight: isActive ? '700' : '500',
+                transition: 'var(--transition)'
+              })}
+              title={collapsed ? 'User Dashboard' : undefined}
+            >
+              <Eye size={18} color="var(--xc-teal)" />
+              {!collapsed && <span>User Dashboard</span>}
+            </NavLink>
+          )}
         </nav>
       </div>
 
       {/* Bottom User & Health Footer */}
-      <div style={{ borderTop: '1px solid var(--border-color)', padding: '12px 10px' }}>
-        {/* System Health Status */}
+      <div style={{ borderTop: '1px solid var(--glass-border)', padding: '14px 10px' }}>
         {!collapsed && (
           <div
             style={{
               padding: '8px 10px',
-              backgroundColor: 'var(--bg-card)',
+              backgroundColor: 'rgba(18, 27, 40, 0.6)',
+              border: '1px solid var(--glass-border-subtle)',
               borderRadius: '6px',
               marginBottom: '10px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              fontSize: '0.75rem',
+              fontSize: '0.74rem',
               color: 'var(--text-muted)'
             }}
           >
-            <span>Live Stream</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div
-                style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  backgroundColor: wsStatus === 'connected' ? 'var(--xc-teal)' : 'var(--sev-high)',
-                  boxShadow: wsStatus === 'connected' ? '0 0 8px var(--xc-teal)' : 'none'
-                }}
-              />
-              <span style={{ textTransform: 'capitalize', color: 'var(--text-primary)', fontWeight: '500' }}>
-                {wsStatus}
-              </span>
-            </div>
+            <span>Telemetry Pipeline</span>
+            <span style={{ color: wsStatus === 'connected' ? 'var(--xc-teal)' : '#F5C451', fontWeight: '600' }}>
+              ● {wsStatus === 'connected' ? 'Active' : 'Offline'}
+            </span>
           </div>
         )}
 
-        {/* User Card */}
+        {/* User Card & Logout */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: collapsed ? 'center' : 'space-between',
-            padding: '6px 4px'
+            gap: '8px'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                backgroundColor: 'var(--bg-elevated)',
-                border: '1px solid var(--border-color)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--xc-aqua)'
-              }}
-            >
-              <User size={16} />
-            </div>
-            {!collapsed && (
-              <div style={{ overflow: 'hidden' }}>
-                <div style={{ fontSize: '0.84rem', fontWeight: '600', color: 'var(--text-primary)', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {user?.username || 'Analyst'}
+          {!collapsed && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+              <div
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(114, 110, 255, 0.2)',
+                  border: '1px solid var(--xc-violet)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--xc-violet)',
+                  fontWeight: '700',
+                  fontSize: '0.82rem',
+                  flexShrink: 0
+                }}
+              >
+                {user?.username?.charAt(0).toUpperCase() || 'U'}
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: '0.84rem', fontWeight: '700', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {user?.username}
                 </div>
-                <div style={{ fontSize: '0.70rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                  {user?.role || 'analyst'}
+                <div style={{ fontSize: '0.68rem', color: 'var(--xc-aqua)', textTransform: 'uppercase' }}>
+                  {user?.role}
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
           <button
-            onClick={logout}
+            onClick={handleLogout}
             style={{
               background: 'transparent',
               color: 'var(--text-muted)',
@@ -217,10 +256,9 @@ export const Sidebar = ({ collapsed, setCollapsed }) => {
               alignItems: 'center',
               justifyContent: 'center',
               padding: '6px',
-              borderRadius: '6px',
-              transition: 'var(--transition)'
+              borderRadius: '6px'
             }}
-            title="Log out of XCIDION"
+            title="Log out"
           >
             <LogOut size={16} />
           </button>

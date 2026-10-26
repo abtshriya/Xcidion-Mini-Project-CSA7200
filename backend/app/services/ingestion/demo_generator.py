@@ -102,6 +102,104 @@ def seed_initial_data(db: Session):
         db.add(default_model)
         db.commit()
 
+    # 5. Approved Subnets
+    from backend.app.models.entities import ApprovedSubnet, Device
+    if db.query(ApprovedSubnet).count() == 0:
+        subnets = [
+            ApprovedSubnet(cidr="127.0.0.1/32", label="Localhost Loopback Scope", description="Self-system audit and service verification", is_active=True),
+            ApprovedSubnet(cidr="192.168.1.0/24", label="Core Lab / Internal Subnet", description="Enterprise LAN and workstation pool", is_active=True),
+            ApprovedSubnet(cidr="10.0.0.0/24", label="DMZ Perimeter Network", description="Public-facing services and gateway segment", is_active=True),
+            ApprovedSubnet(cidr="172.16.0.0/24", label="Internal Services VLAN", description="Database tier and internal API microservices", is_active=True)
+        ]
+        db.add_all(subnets)
+        db.commit()
+
+    # 6. Baseline Devices (Lab Inventory)
+    if db.query(Device).count() == 0:
+        now = datetime.datetime.now(datetime.timezone.utc)
+        devs = [
+            Device(
+                id="DEV-192-168-1-10",
+                ip_address="192.168.1.10",
+                hostname="web-prod-01.internal",
+                status="online",
+                risk_level="high",
+                open_ports=[
+                    {"port": 80, "protocol": "TCP", "service": "HTTP", "state": "open"},
+                    {"port": 443, "protocol": "TCP", "service": "HTTPS", "state": "open"},
+                    {"port": 22, "protocol": "TCP", "service": "SSH", "state": "open"}
+                ],
+                suspicious_indicators=["Exploit attempts detected on HTTP/80", "Active NIDS Alerts Associated"],
+                first_seen=now,
+                last_seen=now,
+                scan_source="scanner"
+            ),
+            Device(
+                id="DEV-192-168-1-50",
+                ip_address="192.168.1.50",
+                hostname="db-cluster-01.internal",
+                status="online",
+                risk_level="critical",
+                open_ports=[
+                    {"port": 5432, "protocol": "TCP", "service": "PostgreSQL", "state": "open"},
+                    {"port": 22, "protocol": "TCP", "service": "SSH", "state": "open"}
+                ],
+                suspicious_indicators=["Database port exposed to subnet", "Credential brute force target", "High Severity NIDS Alerts"],
+                first_seen=now,
+                last_seen=now,
+                scan_source="scanner"
+            ),
+            Device(
+                id="DEV-192-168-1-100",
+                ip_address="192.168.1.100",
+                hostname="sec-workstation.internal",
+                status="online",
+                risk_level="medium",
+                open_ports=[
+                    {"port": 445, "protocol": "TCP", "service": "SMB", "state": "open"},
+                    {"port": 135, "protocol": "TCP", "service": "RPC", "state": "open"}
+                ],
+                suspicious_indicators=["Suspicious lateral network connections observed"],
+                first_seen=now,
+                last_seen=now,
+                scan_source="scanner"
+            ),
+            Device(
+                id="DEV-10-0-0-15",
+                ip_address="10.0.0.15",
+                hostname="edge-firewall.internal",
+                status="online",
+                risk_level="low",
+                open_ports=[
+                    {"port": 80, "protocol": "TCP", "service": "HTTP", "state": "open"},
+                    {"port": 443, "protocol": "TCP", "service": "HTTPS", "state": "open"},
+                    {"port": 8080, "protocol": "TCP", "service": "HTTP-Proxy", "state": "open"}
+                ],
+                suspicious_indicators=[],
+                first_seen=now,
+                last_seen=now,
+                scan_source="scanner"
+            ),
+            Device(
+                id="DEV-198-51-100-42",
+                ip_address="198.51.100.42",
+                hostname="remote-adversary.node",
+                status="online",
+                risk_level="critical",
+                open_ports=[
+                    {"port": 4444, "protocol": "TCP", "service": "Metasploit-Listener", "state": "open"},
+                    {"port": 8080, "protocol": "TCP", "service": "HTTP-Proxy", "state": "open"}
+                ],
+                suspicious_indicators=["External source of horizontal port scanning", "Command & Control beaconing host"],
+                first_seen=now,
+                last_seen=now,
+                scan_source="scanner"
+            )
+        ]
+        db.add_all(devs)
+        db.commit()
+
+
 def generate_demo_scenario(db: Session, scenario_name: str) -> Dict[str, Any]:
     """
     Generates controlled demonstration events to validate workflows.

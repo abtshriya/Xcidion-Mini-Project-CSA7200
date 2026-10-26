@@ -161,3 +161,81 @@ def test_attack_dna_graph():
     assert "nodes" in graph_data
     assert "edges" in graph_data
     assert "timeline" in graph_data
+
+def test_devices_and_investigation():
+    # Login as analyst
+    res = client.post("/api/v1/auth/login", data={"username": "analyst", "password": "Analyst@Xcidion2026"})
+    headers = {"Authorization": f"Bearer {res.json()['access_token']}"}
+
+    # 1. Device listing
+    devs_res = client.get("/api/v1/devices", headers=headers)
+    assert devs_res.status_code == 200
+    devices = devs_res.json()
+    assert len(devices) > 0
+    test_ip = devices[0]["ip_address"]
+
+    # 2. Device deep investigation
+    inv_res = client.get(f"/api/v1/devices/{test_ip}/investigate", headers=headers)
+    assert inv_res.status_code == 200
+    inv = inv_res.json()
+    assert "device" in inv
+    assert "associated_alerts" in inv
+    assert "attack_dna_timeline" in inv
+    assert "threat_trajectory" in inv
+    # Verify that confirmed events and inferred relations are cleanly delineated
+    assert "confirmed_events_count" in inv
+    assert "inferred_relations_count" in inv
+    for item in inv["attack_dna_timeline"]:
+        assert "is_confirmed" in item
+        assert "nature" in item
+
+def test_authorized_scanning_and_permissions():
+    # Login as admin
+    admin_res = client.post("/api/v1/auth/login", data={"username": "admin", "password": "Admin@Xcidion2026"})
+    admin_headers = {"Authorization": f"Bearer {admin_res.json()['access_token']}"}
+
+    # Login as analyst (non-admin)
+    analyst_res = client.post("/api/v1/auth/login", data={"username": "analyst", "password": "Analyst@Xcidion2026"})
+    analyst_headers = {"Authorization": f"Bearer {analyst_res.json()['access_token']}"}
+
+    # 1. Get approved subnets
+    sub_res = client.get("/api/v1/scanning/approved-subnets", headers=admin_headers)
+    assert sub_res.status_code == 200
+    subnets = sub_res.json()
+    assert len(subnets) > 0
+    assert any("127.0.0.1" in s["cidr"] for s in subnets)
+
+    # 2. Analyst trying to start scan should be rejected with 403
+    scan_denied = client.post("/api/v1/scanning/start", json={"subnet": "127.0.0.1/32"}, headers=analyst_headers)
+    assert scan_denied.status_code == 403
+
+    # 3. Admin scanning an unapproved subnet should be rejected
+    scan_blocked = client.post("/api/v1/scanning/start", json={"subnet": "8.8.8.0/24"}, headers=admin_headers)
+    assert scan_blocked.status_code == 200
+    assert scan_blocked.json()["status"] == "blocked"
+
+    # 4. Admin scanning an approved subnet should succeed
+    scan_ok = client.post("/api/v1/scanning/start", json={"subnet": "127.0.0.1/32"}, headers=admin_headers)
+    assert scan_ok.status_code == 200
+    assert scan_ok.json()["status"] == "completed"
+
+def test_terminal_command_execution():
+    res = client.post("/api/v1/auth/login", data={"username": "admin", "password": "Admin@Xcidion2026"})
+    headers = {"Authorization": f"Bearer {res.json()['access_token']}"}
+
+    # Execute status
+    cmd_res = client.post("/api/v1/terminal/execute", json={"command": "status"}, headers=headers)
+    assert cmd_res.status_code == 200
+    lines = cmd_res.json()["output_lines"]
+    assert any("SYSTEM POSTURE" in l["text"] for l in lines)
+
+    # Execute devices
+    dev_cmd = client.post("/api/v1/terminal/execute", json={"command": "devices"}, headers=headers)
+    assert dev_cmd.status_code == 200
+    assert len(dev_cmd.json()["output_lines"]) > 0
+
+    # Execute help
+    help_cmd = client.post("/api/v1/terminal/execute", json={"command": "help"}, headers=headers)
+    assert help_cmd.status_code == 200
+    assert any("status" in l["text"] for l in help_cmd.json()["output_lines"])
+

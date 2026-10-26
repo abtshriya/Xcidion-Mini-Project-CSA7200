@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Search, Bell, Sparkles, Wifi, Shield, RefreshCw } from 'lucide-react';
+import { Search, Sparkles, RefreshCw, Radio, CheckCircle, Shield } from 'lucide-react';
 import { useWebSocket } from '../../context/WebSocketContext';
+import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api/client';
 
 export const Header = ({ onDemoInjected }) => {
   const { status: wsStatus } = useWebSocket();
+  const { user } = useAuth();
   const [injecting, setInjecting] = useState(false);
   const [showDemoMenu, setShowDemoMenu] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
   const handleInjectScenario = async (scenario) => {
     setInjecting(true);
@@ -26,8 +27,9 @@ export const Header = ({ onDemoInjected }) => {
     <header
       style={{
         height: 'var(--header-height)',
-        backgroundColor: 'var(--bg-main)',
-        borderBottom: '1px solid var(--border-color)',
+        backgroundColor: 'rgba(10, 15, 23, 0.85)',
+        backdropFilter: 'var(--glass-blur)',
+        borderBottom: '1px solid var(--glass-border)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -37,31 +39,20 @@ export const Header = ({ onDemoInjected }) => {
         zIndex: 90
       }}
     >
-      {/* Global Search */}
-      <div style={{ position: 'relative', width: '380px' }}>
-        <Search
-          size={16}
-          style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}
-        />
-        <input
-          type="text"
-          placeholder="Global search by IP, Alert ID, Rule, or Incident..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={{
-            width: '100%',
-            paddingLeft: '38px',
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-color)',
-            borderRadius: '20px',
-            fontSize: '0.84rem'
-          }}
-        />
+      {/* Title & Tagline */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ fontSize: '0.94rem', fontWeight: '800', color: 'var(--text-primary)', letterSpacing: '0.5px' }}>
+          XCIDION NIDS
+        </div>
+        <span style={{ color: 'var(--glass-border)', fontSize: '0.8rem' }}>|</span>
+        <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+          Explainable Network Intrusion Detection System
+        </span>
       </div>
 
       {/* Right Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        {/* Demonstration Mode Controller */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        {/* Controlled Attack Simulation Dropdown for Viva / Demo */}
         <div style={{ position: 'relative' }}>
           <button
             onClick={() => setShowDemoMenu(!showDemoMenu)}
@@ -69,18 +60,20 @@ export const Header = ({ onDemoInjected }) => {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
+              gap: '6px',
               padding: '6px 14px',
               backgroundColor: 'rgba(114, 110, 255, 0.15)',
-              border: '1px solid var(--xc-violet)',
+              border: '1px solid rgba(114, 110, 255, 0.35)',
               borderRadius: '20px',
               color: 'var(--xc-violet)',
               fontSize: '0.78rem',
-              fontWeight: '600'
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'var(--transition)'
             }}
           >
-            <Sparkles size={14} />
-            <span>{injecting ? 'Injecting Attack...' : 'Demo Scenarios'}</span>
+            <Sparkles size={13} color="var(--xc-aqua)" />
+            <span>{injecting ? 'Injecting Telemetry...' : 'Lab Test Scenarios'}</span>
           </button>
 
           {showDemoMenu && (
@@ -89,24 +82,25 @@ export const Header = ({ onDemoInjected }) => {
                 position: 'absolute',
                 top: '40px',
                 right: 0,
-                width: '260px',
-                backgroundColor: 'var(--bg-elevated)',
-                border: '1px solid var(--border-color)',
+                width: '270px',
+                backgroundColor: 'rgba(14, 21, 31, 0.95)',
+                backdropFilter: 'var(--glass-blur)',
+                border: '1px solid var(--glass-border)',
                 borderRadius: '8px',
-                boxShadow: 'var(--shadow-elevated)',
+                boxShadow: 'var(--glass-shadow-lg)',
                 zIndex: 200,
                 padding: '8px 0'
               }}
             >
-              <div style={{ padding: '6px 14px', fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                Simulate Controlled Attacks
+              <div style={{ padding: '6px 14px', fontSize: '0.70rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Simulate Controlled Attack Sequences
               </div>
               {[
-                { id: 'complete_campaign', name: 'Multi-stage Attack (Full Story)' },
-                { id: 'port_scan', name: 'Horizontal Port Scan' },
-                { id: 'brute_force', name: 'SSH/RDP Auth Brute Force' },
-                { id: 'data_exfiltration', name: 'Outbound Exfiltration Spike' },
-                { id: 'normal', name: 'Benign HTTP/DNS Flow' }
+                { id: 'complete_campaign', name: 'Multi-stage Attack (Port Scan to Exfil)' },
+                { id: 'port_scan', name: 'Horizontal Reconnaissance Scan' },
+                { id: 'brute_force', name: 'SSH Auth Brute Force Flood' },
+                { id: 'data_exfiltration', name: 'High-Volume Outbound Exfiltration' },
+                { id: 'normal', name: 'Benign Corporate Web Flow' }
               ].map((item) => (
                 <button
                   key={item.id}
@@ -115,15 +109,17 @@ export const Header = ({ onDemoInjected }) => {
                     width: '100%',
                     textAlign: 'left',
                     padding: '8px 14px',
-                    fontSize: '0.82rem',
+                    fontSize: '0.80rem',
                     color: 'var(--text-primary)',
                     backgroundColor: 'transparent',
+                    border: 'none',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
+                    cursor: 'pointer',
                     transition: 'var(--transition)'
                   }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--bg-card)'}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(114, 110, 255, 0.12)'}
                   onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                 >
                   <span>{item.name}</span>
@@ -140,8 +136,8 @@ export const Header = ({ onDemoInjected }) => {
             alignItems: 'center',
             gap: '8px',
             padding: '5px 12px',
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border-color)',
+            backgroundColor: 'rgba(18, 27, 40, 0.6)',
+            border: '1px solid var(--glass-border)',
             borderRadius: '20px',
             fontSize: '0.78rem'
           }}
@@ -151,12 +147,12 @@ export const Header = ({ onDemoInjected }) => {
               width: '8px',
               height: '8px',
               borderRadius: '50%',
-              backgroundColor: wsStatus === 'connected' ? 'var(--xc-teal)' : 'var(--sev-high)',
+              backgroundColor: wsStatus === 'connected' ? 'var(--xc-teal)' : '#F5C451',
               boxShadow: wsStatus === 'connected' ? '0 0 8px var(--xc-teal)' : 'none'
             }}
           />
           <span style={{ color: 'var(--text-secondary)' }}>
-            Engine: <strong style={{ color: 'var(--text-primary)' }}>Active</strong>
+            Pipeline: <strong style={{ color: 'var(--text-primary)' }}>{wsStatus === 'connected' ? 'Connected' : 'Offline'}</strong>
           </span>
         </div>
       </div>

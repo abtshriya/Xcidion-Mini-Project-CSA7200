@@ -190,3 +190,45 @@ class SystemEvent(Base):
     message = Column(Text, nullable=False)
     details = Column(JSON, default=dict)
     timestamp = Column(DateTime, default=utcnow, index=True, nullable=False)
+
+class ApprovedSubnet(Base):
+    __tablename__ = "approved_subnets"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    cidr = Column(String(64), unique=True, nullable=False)  # e.g. 192.168.1.0/24, 127.0.0.1/32
+    label = Column(String(128), nullable=False)
+    description = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+
+class Device(Base):
+    __tablename__ = "devices"
+    
+    id = Column(String(64), primary_key=True, index=True)
+    ip_address = Column(String(45), unique=True, index=True, nullable=False)
+    mac_address = Column(String(48), nullable=True)
+    hostname = Column(String(128), nullable=True)
+    vendor = Column(String(128), nullable=True)
+    os_hint = Column(String(128), nullable=True)
+    status = Column(String(32), default="online", nullable=False)  # online, offline, scanning
+    risk_level = Column(String(32), default="low", nullable=False)  # low, medium, high, critical
+    open_ports = Column(JSON, default=list)  # [{"port": 80, "protocol": "TCP", "service": "http", "state": "open"}]
+    suspicious_indicators = Column(JSON, default=list)  # ["Open DB Port", "Active NIDS Alerts"]
+    first_seen = Column(DateTime, default=utcnow, nullable=False)
+    last_seen = Column(DateTime, default=utcnow, nullable=False)
+    scan_source = Column(String(64), default="network_traffic", nullable=False)  # scanner, traffic_ingestion, manual
+    metadata_json = Column(JSON, default=dict)
+
+class ScanJob(Base):
+    __tablename__ = "scan_jobs"
+    
+    id = Column(String(64), primary_key=True, index=True)
+    subnet = Column(String(64), nullable=False)
+    initiated_by = Column(String(64), nullable=False)
+    status = Column(String(32), default="running", nullable=False)  # running, completed, failed, blocked
+    devices_found = Column(Integer, default=0, nullable=False)
+    open_ports_found = Column(Integer, default=0, nullable=False)
+    log_output = Column(JSON, default=list)  # [{"timestamp": "...", "level": "INFO", "message": "..."}]
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    completed_at = Column(DateTime, nullable=True)
+

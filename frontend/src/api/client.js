@@ -303,6 +303,59 @@ class ApiClient {
       body: JSON.stringify(payload)
     });
   }
+
+  // Devices & Inventory
+  async getDevices(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    return this.request(`/devices?${query}`);
+  }
+
+  async getDevice(idOrIp) {
+    return this.request(`/devices/${encodeURIComponent(idOrIp)}`);
+  }
+
+  async investigateDevice(idOrIp) {
+    return this.request(`/devices/${encodeURIComponent(idOrIp)}/investigate`);
+  }
+
+  async resyncDevices() {
+    return this.request('/devices/resync', { method: 'POST' });
+  }
+
+  // Scanning & Scope Management
+  async getApprovedSubnets() {
+    return this.request('/scanning/approved-subnets');
+  }
+
+  async addApprovedSubnet(payload) {
+    return this.request('/scanning/approved-subnets', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  }
+
+  async startScan(payload) {
+    return this.request('/scanning/start', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  }
+
+  async getScanJobs() {
+    return this.request('/scanning/jobs');
+  }
+
+  async getScanJob(jobId) {
+    return this.request(`/scanning/jobs/${encodeURIComponent(jobId)}`);
+  }
+
+  // Interactive Live Monitoring Terminal
+  async executeTerminalCommand(command) {
+    return this.request('/terminal/execute', {
+      method: 'POST',
+      body: JSON.stringify({ command })
+    });
+  }
 }
 
 export const api = new ApiClient();
