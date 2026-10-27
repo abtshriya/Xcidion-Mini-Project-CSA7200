@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   X, ShieldAlert, Cpu, AlertTriangle, Activity, Dna,
   TrendingUp, CheckCircle2, HelpCircle, Network, ArrowRight,
-  Shield, Server, Radio, FileText, Lock
+  Shield, Server, Radio, FileText, Lock, Info
 } from 'lucide-react';
 import { api } from '../../api/client';
 import { LoadingSpinner } from '../common/LoadingSpinner';
@@ -42,10 +42,10 @@ export const DeviceInvestigationModal = ({ ipAddress, onClose }) => {
 
   const getRiskColor = (risk) => {
     switch (risk?.toLowerCase()) {
-      case 'critical': return '#FF4D67';
-      case 'high': return '#FF8A4C';
-      case 'medium': return '#F5C451';
-      default: return 'var(--xc-teal)';
+      case 'critical': return '#EF4444';
+      case 'high': return '#F97316';
+      case 'medium': return '#F59E0B';
+      default: return '#10B981';
     }
   };
 
@@ -55,7 +55,7 @@ export const DeviceInvestigationModal = ({ ipAddress, onClose }) => {
         position: 'fixed',
         inset: 0,
         backgroundColor: 'rgba(8, 12, 18, 0.88)',
-        backdropFilter: 'blur(10px)',
+        backdropFilter: 'blur(6px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -72,47 +72,51 @@ export const DeviceInvestigationModal = ({ ipAddress, onClose }) => {
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          boxShadow: '0 24px 64px rgba(0, 0, 0, 0.6)'
+          backgroundColor: '#0F1520',
+          border: '1px solid #243144',
+          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7)'
         }}
       >
         {/* Modal Header */}
         <div
           style={{
-            padding: '18px 24px',
-            borderBottom: '1px solid var(--glass-border)',
+            padding: '16px 22px',
+            borderBottom: '1px solid #1E293B',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: 'rgba(14, 21, 31, 0.95)'
+            backgroundColor: '#121927'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div
               style={{
-                width: '42px',
-                height: '42px',
-                borderRadius: '8px',
-                backgroundColor: 'rgba(114, 110, 255, 0.15)',
-                border: '1px solid rgba(114, 110, 255, 0.3)',
+                width: '38px',
+                height: '38px',
+                borderRadius: '6px',
+                backgroundColor: '#1A2333',
+                border: '1px solid #28364C',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}
             >
-              <Server size={22} color="var(--xc-aqua)" />
+              <Server size={18} color="#94A3B8" />
             </div>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h2 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
                   {ipAddress}
                 </h2>
                 {device && (
                   <span
                     className="badge"
                     style={{
-                      backgroundColor: `${getRiskColor(device.risk_level)}20`,
+                      backgroundColor: `${getRiskColor(device.risk_level)}15`,
                       color: getRiskColor(device.risk_level),
-                      border: `1px solid ${getRiskColor(device.risk_level)}`
+                      border: `1px solid ${getRiskColor(device.risk_level)}35`,
+                      fontSize: '0.68rem',
+                      padding: '2px 7px'
                     }}
                   >
                     Risk: {device.risk_level?.toUpperCase()}
@@ -120,18 +124,19 @@ export const DeviceInvestigationModal = ({ ipAddress, onClose }) => {
                 )}
                 <span
                   style={{
-                    fontSize: '0.72rem',
-                    padding: '2px 8px',
+                    fontSize: '0.68rem',
+                    padding: '2px 7px',
                     borderRadius: '4px',
-                    backgroundColor: 'rgba(8, 198, 172, 0.15)',
-                    color: 'var(--xc-teal)'
+                    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                    color: '#10B981',
+                    border: '1px solid rgba(16, 185, 129, 0.25)'
                   }}
                 >
-                  ● ONLINE ASSET
+                  ● Active Host
                 </span>
               </div>
-              <p style={{ fontSize: '0.80rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                Host: <strong>{device?.hostname || 'Unknown Host'}</strong> | Discovered via {device?.scan_source || 'network telemetry'}
+              <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                Hostname: <strong>{device?.hostname || 'Unknown'}</strong> | Discovered via {device?.scan_source || 'network telemetry'}
               </p>
             </div>
           </div>
@@ -139,10 +144,10 @@ export const DeviceInvestigationModal = ({ ipAddress, onClose }) => {
           <button
             onClick={onClose}
             className="btn-secondary"
-            style={{ padding: '8px', borderRadius: '6px', height: '36px', width: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            style={{ padding: '6px', borderRadius: '4px', height: '32px', width: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             title="Close dossier"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
@@ -150,16 +155,17 @@ export const DeviceInvestigationModal = ({ ipAddress, onClose }) => {
         <div
           style={{
             display: 'flex',
-            borderBottom: '1px solid var(--glass-border)',
-            backgroundColor: 'rgba(10, 15, 23, 0.8)',
-            padding: '0 24px'
+            borderBottom: '1px solid #1E293B',
+            backgroundColor: '#0D131D',
+            padding: '0 16px',
+            gap: '2px'
           }}
         >
           {[
-            { id: 'timeline', label: 'Attack DNA Timeline', icon: Dna, count: timeline.length },
-            { id: 'trajectory', label: 'Threat Trajectory & Predictions', icon: TrendingUp },
+            { id: 'timeline', label: 'Activity Timeline', icon: Activity, count: timeline.length },
+            { id: 'trajectory', label: 'Threat Trajectory & ATT&CK', icon: TrendingUp },
             { id: 'alerts', label: 'Associated Alerts', icon: AlertTriangle, count: alerts.length },
-            { id: 'profile', label: 'Port Audit & Profile', icon: Cpu, count: device?.open_ports?.length }
+            { id: 'profile', label: 'Port Audit & Fingerprint', icon: Cpu, count: device?.open_ports?.length }
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -170,28 +176,28 @@ export const DeviceInvestigationModal = ({ ipAddress, onClose }) => {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  padding: '14px 18px',
+                  gap: '7px',
+                  padding: '11px 14px',
                   border: 'none',
-                  borderBottom: isActive ? '2px solid var(--xc-aqua)' : '2px solid transparent',
+                  borderBottom: isActive ? '2px solid #4F46E5' : '2px solid transparent',
                   background: 'none',
-                  color: isActive ? 'var(--xc-aqua)' : 'var(--text-muted)',
-                  fontWeight: isActive ? '700' : '500',
-                  fontSize: '0.84rem',
+                  color: isActive ? '#F1F5F9' : '#8291A5',
+                  fontWeight: isActive ? '600' : '500',
+                  fontSize: '0.80rem',
                   cursor: 'pointer',
-                  transition: 'var(--transition)'
+                  transition: 'all 0.12s ease'
                 }}
               >
-                <Icon size={16} />
+                <Icon size={14} color={isActive ? '#818CF8' : 'currentColor'} />
                 <span>{tab.label}</span>
                 {tab.count !== undefined && (
                   <span
                     style={{
-                      fontSize: '0.68rem',
-                      padding: '1px 6px',
-                      borderRadius: '10px',
-                      backgroundColor: isActive ? 'rgba(89, 255, 231, 0.2)' : 'rgba(255, 255, 255, 0.08)',
-                      color: isActive ? 'var(--xc-aqua)' : 'var(--text-muted)'
+                      fontSize: '0.66rem',
+                      padding: '1px 5px',
+                      borderRadius: '8px',
+                      backgroundColor: isActive ? '#282F48' : '#1A2230',
+                      color: isActive ? '#C7D2FE' : '#8291A5'
                     }}
                   >
                     {tab.count}
@@ -214,17 +220,17 @@ export const DeviceInvestigationModal = ({ ipAddress, onClose }) => {
             </div>
           ) : (
             <>
-              {/* TAB 1: ATTACK DNA TIMELINE (CONFIRMED VS INFERRED DELINEATED) */}
+              {/* TAB 1: OBSERVED & INFERRED TIMELINE */}
               {activeTab === 'timeline' && (
                 <div>
                   {/* Delineation Legend */}
                   <div
                     style={{
-                      padding: '12px 18px',
-                      backgroundColor: 'rgba(18, 27, 40, 0.7)',
-                      borderRadius: '8px',
-                      border: '1px solid var(--glass-border)',
-                      marginBottom: '20px',
+                      padding: '12px 16px',
+                      backgroundColor: '#121824',
+                      borderRadius: '6px',
+                      border: '1px solid #1E293B',
+                      marginBottom: '18px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
@@ -232,27 +238,27 @@ export const DeviceInvestigationModal = ({ ipAddress, onClose }) => {
                       gap: '12px'
                     }}
                   >
-                    <div style={{ fontSize: '0.80rem', color: 'var(--text-secondary)' }}>
-                      <strong>Evidence Delineation Standard:</strong> Observed network traffic records are strictly distinguished from graph-correlated inferences.
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                      <strong>Evidence Standard:</strong> Confirmed telemetry logs are strictly distinguished from correlated inferences.
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '0.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '0.74rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ width: '12px', height: '12px', borderRadius: '3px', backgroundColor: 'var(--xc-teal)' }} />
-                        <span style={{ color: 'var(--xc-teal)', fontWeight: '600' }}>Confirmed Observed Event ({data.confirmed_events_count})</span>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981' }} />
+                        <span style={{ color: '#10B981', fontWeight: '600' }}>Confirmed ({data?.confirmed_events_count || 0})</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ width: '12px', height: '12px', borderRadius: '3px', border: '2px dashed #F5C451', backgroundColor: 'transparent' }} />
-                        <span style={{ color: '#F5C451', fontWeight: '600' }}>Inferred Relationship ({data.inferred_relations_count})</span>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '2px', border: '1px dashed #F59E0B', backgroundColor: 'transparent' }} />
+                        <span style={{ color: '#F59E0B', fontWeight: '600' }}>Inferred ({data?.inferred_relations_count || 0})</span>
                       </div>
                     </div>
                   </div>
 
                   {timeline.length === 0 ? (
                     <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                      No events or graph correlations recorded for this device.
+                      No events recorded for this host.
                     </div>
                   ) : (
-                    <div style={{ position: 'relative', paddingLeft: '28px', borderLeft: '2px solid rgba(114, 110, 255, 0.2)' }}>
+                    <div style={{ position: 'relative', paddingLeft: '24px', borderLeft: '1px solid #233044' }}>
                       {timeline.map((evt, idx) => {
                         const isConfirmed = evt.is_confirmed;
                         return (
@@ -260,75 +266,73 @@ export const DeviceInvestigationModal = ({ ipAddress, onClose }) => {
                             key={evt.id || idx}
                             style={{
                               position: 'relative',
-                              marginBottom: '20px',
-                              padding: '16px',
-                              borderRadius: '8px',
-                              backgroundColor: isConfirmed ? 'rgba(14, 21, 31, 0.75)' : 'rgba(24, 35, 49, 0.65)',
-                              border: isConfirmed ? '1px solid rgba(8, 198, 172, 0.35)' : '1px dashed rgba(245, 196, 81, 0.45)',
-                              boxShadow: 'var(--glass-shadow-sm)'
+                              marginBottom: '16px',
+                              padding: '14px',
+                              borderRadius: '6px',
+                              backgroundColor: isConfirmed ? '#121926' : '#101622',
+                              border: isConfirmed ? '1px solid #22324A' : '1px dashed #343E4F'
                             }}
                           >
                             {/* Timeline Node Marker */}
                             <div
                               style={{
                                 position: 'absolute',
-                                left: '-35px',
-                                top: '18px',
-                                width: '14px',
-                                height: '14px',
-                                borderRadius: isConfirmed ? '50%' : '3px',
-                                backgroundColor: isConfirmed ? 'var(--xc-teal)' : '#080C12',
-                                border: isConfirmed ? '2px solid #080C12' : '2px dashed #F5C451',
-                                boxShadow: isConfirmed ? '0 0 8px rgba(8, 198, 172, 0.6)' : 'none'
+                                left: '-30px',
+                                top: '16px',
+                                width: '10px',
+                                height: '10px',
+                                borderRadius: isConfirmed ? '50%' : '2px',
+                                backgroundColor: isConfirmed ? '#10B981' : '#0B0F17',
+                                border: isConfirmed ? '2px solid #0B0F17' : '1px dashed #F59E0B'
                               }}
                             />
 
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: '8px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span
                                   style={{
-                                    fontSize: '0.68rem',
-                                    fontWeight: '800',
-                                    padding: '2px 8px',
-                                    borderRadius: '4px',
-                                    backgroundColor: isConfirmed ? 'rgba(8, 198, 172, 0.18)' : 'rgba(245, 196, 81, 0.18)',
-                                    color: isConfirmed ? 'var(--xc-teal)' : '#F5C451',
-                                    letterSpacing: '0.5px'
+                                    fontSize: '0.66rem',
+                                    fontWeight: '700',
+                                    padding: '2px 7px',
+                                    borderRadius: '3px',
+                                    backgroundColor: isConfirmed ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+                                    color: isConfirmed ? '#10B981' : '#F59E0B',
+                                    letterSpacing: '0.4px'
                                   }}
                                 >
-                                  {isConfirmed ? 'CONFIRMED OBSERVED EVENT' : 'INFERRED RELATIONSHIP'}
+                                  {isConfirmed ? 'OBSERVED EVENT' : 'INFERRED RELATION'}
                                 </span>
-                                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                                <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                                   {evt.timestamp}
                                 </span>
                               </div>
 
                               <span
                                 style={{
-                                  fontSize: '0.72rem',
+                                  fontSize: '0.70rem',
                                   padding: '2px 6px',
                                   borderRadius: '3px',
-                                  backgroundColor: 'rgba(114, 110, 255, 0.15)',
-                                  color: 'var(--xc-violet)',
+                                  backgroundColor: '#1E2838',
+                                  color: '#94A3B8',
                                   fontFamily: 'var(--font-mono)'
                                 }}
                               >
-                                Source: {evt.detection_source}
+                                {evt.detection_source}
                               </span>
                             </div>
 
-                            <h4 style={{ fontSize: '0.96rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '4px' }}>
+                            <h4 style={{ fontSize: '0.90rem', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '4px' }}>
                               {evt.title}
                             </h4>
-                            <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: '1.4', marginBottom: '8px' }}>
+                            <p style={{ fontSize: '0.80rem', color: 'var(--text-secondary)', lineHeight: '1.4', marginBottom: '8px' }}>
                               {evt.description}
                             </p>
 
-                            <div style={{ display: 'flex', gap: '14px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                            <div style={{ display: 'flex', gap: '14px', fontSize: '0.74rem', color: 'var(--text-muted)' }}>
                               <span>Protocol: <strong style={{ color: 'var(--text-primary)' }}>{evt.protocol || 'N/A'}</strong></span>
-                              {evt.port && <span>Target Port: <strong style={{ color: 'var(--text-primary)' }}>{evt.port}</strong></span>}
+                              {evt.port && <span>Port: <strong style={{ color: 'var(--text-primary)' }}>{evt.port}</strong></span>}
                               <span>Evidence: <strong style={{ color: 'var(--text-primary)' }}>{evt.evidence_type}</strong></span>
-                              <span>Confidence: <strong style={{ color: isConfirmed ? 'var(--xc-teal)' : '#F5C451' }}>{evt.confidence_score * 100}%</strong></span>
+                              <span>Confidence: <strong style={{ color: isConfirmed ? '#10B981' : '#F59E0B' }}>{(evt.confidence_score * 100).toFixed(0)}%</strong></span>
                             </div>
                           </div>
                         );
@@ -338,41 +342,38 @@ export const DeviceInvestigationModal = ({ ipAddress, onClose }) => {
                 </div>
               )}
 
-              {/* TAB 2: THREAT TRAJECTORY (PROBABILISTIC ESTIMATION VS GROUND TRUTH) */}
+              {/* TAB 2: THREAT TRAJECTORY */}
               {activeTab === 'trajectory' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  {/* Prominent Prediction Methodology Callout */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {/* Methodology Callout */}
                   <div
                     style={{
-                      padding: '14px 18px',
-                      backgroundColor: 'rgba(114, 110, 255, 0.08)',
-                      border: '1px solid rgba(114, 110, 255, 0.25)',
-                      borderRadius: '8px',
+                      padding: '12px 16px',
+                      backgroundColor: '#131A26',
+                      border: '1px solid #233146',
+                      borderRadius: '6px',
                       display: 'flex',
                       alignItems: 'flex-start',
-                      gap: '12px'
+                      gap: '10px'
                     }}
                   >
-                    <Info size={18} color="var(--xc-violet)" style={{ flexShrink: 0, marginTop: '2px' }} />
-                    <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: '1.45' }}>
-                      <strong style={{ color: 'var(--xc-violet)' }}>Conventional Probabilistic Markov Trajectory Engine:</strong>
-                      <br />
-                      Predictions represent mathematical transitions across MITRE ATT&CK stages based on prior attack sequences. Projections are clearly designated as <strong>prospective estimates</strong> to distinguish them from confirmed ground-truth intrusion telemetry.
+                    <Info size={16} color="#818CF8" style={{ flexShrink: 0, marginTop: '2px' }} />
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: '1.45' }}>
+                      <strong style={{ color: '#C7D2FE' }}>ATT&CK Stage Trajectory Model:</strong> Projections calculate statistical transitions across MITRE ATT&CK tactics based on observed preceding event sequences.
                     </div>
                   </div>
 
                   {/* Current Observed Threat Stage */}
-                  <div className="glass-card">
-                    <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                      CONFIRMED OBSERVED ATTACK PHASE
+                  <div className="glass-card" style={{ padding: '16px' }}>
+                    <span style={{ fontSize: '0.70rem', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      CURRENT OBSERVED STAGE
                     </span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px' }}>
                       <div
                         style={{
-                          fontSize: '1.25rem',
-                          fontWeight: '800',
-                          color: 'var(--xc-aqua)',
-                          fontFamily: 'var(--font-mono)'
+                          fontSize: '1.15rem',
+                          fontWeight: '700',
+                          color: '#F1F5F9'
                         }}
                       >
                         {trajectory.current_threat_stage || 'Baseline'}
@@ -380,50 +381,52 @@ export const DeviceInvestigationModal = ({ ipAddress, onClose }) => {
                       <span
                         className="badge"
                         style={{
-                          backgroundColor: 'rgba(8, 198, 172, 0.15)',
-                          color: 'var(--xc-teal)',
-                          border: '1px solid var(--xc-teal)'
+                          backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                          color: '#10B981',
+                          border: '1px solid rgba(16, 185, 129, 0.3)',
+                          fontSize: '0.68rem',
+                          padding: '2px 7px'
                         }}
                       >
-                        Ground Truth Telemetry Verified
+                        Telemetry Verified
                       </span>
                     </div>
 
-                    <div style={{ marginTop: '12px', fontSize: '0.80rem', color: 'var(--text-muted)' }}>
-                      Observed Tactics: {trajectory.observed_stages?.join(' ➔ ') || 'None'}
+                    <div style={{ marginTop: '8px', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                      Observed Sequence: {trajectory.observed_stages?.join(' -> ') || 'None'}
                     </div>
                   </div>
 
                   {/* Projected Next Attacker Stages */}
-                  <div className="glass-card">
-                    <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                      PROJECTED ATTACK VECTOR TRAJECTORY (STATISTICAL ESTIMATION)
+                  <div className="glass-card" style={{ padding: '16px' }}>
+                    <span style={{ fontSize: '0.70rem', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      STATISTICAL TRAJECTORY PROJECTIONS
                     </span>
 
                     {trajectory.trajectory_predictions && trajectory.trajectory_predictions.length > 0 ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '14px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
                         {trajectory.trajectory_predictions.map((pred, i) => (
                           <div
                             key={i}
                             style={{
-                              padding: '14px 18px',
-                              borderRadius: '6px',
-                              backgroundColor: 'rgba(8, 12, 18, 0.7)',
-                              border: '1px solid rgba(114, 110, 255, 0.18)'
+                              padding: '12px 14px',
+                              borderRadius: '5px',
+                              backgroundColor: '#111724',
+                              border: '1px solid #1E2B3E'
                             }}
                           >
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <ArrowRight size={16} color="var(--xc-aqua)" />
-                                <span style={{ fontWeight: '700', fontSize: '0.96rem', color: 'var(--text-primary)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                                <ArrowRight size={14} color="#818CF8" />
+                                <span style={{ fontWeight: '600', fontSize: '0.86rem', color: 'var(--text-primary)' }}>
                                   {pred.stage}
                                 </span>
                               </div>
                               <span
                                 style={{
-                                  fontSize: '0.80rem',
-                                  fontWeight: '800',
-                                  color: 'var(--xc-aqua)',
+                                  fontSize: '0.76rem',
+                                  fontWeight: '700',
+                                  color: '#818CF8',
                                   fontFamily: 'var(--font-mono)'
                                 }}
                               >
@@ -432,25 +435,26 @@ export const DeviceInvestigationModal = ({ ipAddress, onClose }) => {
                             </div>
 
                             {/* Probability Progress Bar */}
-                            <div style={{ height: '6px', backgroundColor: 'rgba(255, 255, 255, 0.08)', borderRadius: '3px', overflow: 'hidden', margin: '8px 0' }}>
+                            <div style={{ height: '4px', backgroundColor: '#1E2838', borderRadius: '2px', overflow: 'hidden', margin: '6px 0' }}>
                               <div
                                 style={{
                                   height: '100%',
                                   width: `${pred.confidence_percentage}%`,
-                                  background: 'linear-gradient(90deg, var(--xc-violet), var(--xc-aqua))'
+                                  backgroundColor: '#4F46E5',
+                                  borderRadius: '2px'
                                 }}
                               />
                             </div>
 
-                            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                              Supporting indicators: {pred.supporting_reasons?.join('; ')}
+                            <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '3px' }}>
+                              Indicators: {pred.supporting_reasons?.join('; ')}
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                        No hostile trajectory progression detected. Device traffic matches normal operation baseline.
+                      <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.80rem' }}>
+                        No hostile trajectory progression detected. Host behavior matches normal baseline.
                       </div>
                     )}
                   </div>
@@ -459,17 +463,17 @@ export const DeviceInvestigationModal = ({ ipAddress, onClose }) => {
                   {trajectory.recommended_action && (
                     <div
                       style={{
-                        padding: '16px 20px',
-                        backgroundColor: 'rgba(8, 198, 172, 0.08)',
-                        border: '1px solid rgba(8, 198, 172, 0.3)',
-                        borderRadius: '8px'
+                        padding: '14px 16px',
+                        backgroundColor: '#101B24',
+                        border: '1px solid #1A3732',
+                        borderRadius: '6px'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--xc-teal)', fontWeight: '700', fontSize: '0.88rem', marginBottom: '6px' }}>
-                        <Shield size={16} />
-                        <span>Recommended Proactive Countermeasures</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '7px', color: '#10B981', fontWeight: '600', fontSize: '0.82rem', marginBottom: '4px' }}>
+                        <Shield size={14} />
+                        <span>Recommended Defensive Mitigations</span>
                       </div>
-                      <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                      <p style={{ fontSize: '0.80rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
                         {trajectory.recommended_action}
                       </p>
                     </div>
@@ -480,52 +484,54 @@ export const DeviceInvestigationModal = ({ ipAddress, onClose }) => {
               {/* TAB 3: ASSOCIATED ALERTS */}
               {activeTab === 'alerts' && (
                 <div>
-                  <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '14px' }}>
-                    Associated Intrusion Detection Alerts ({alerts.length})
+                  <h3 style={{ fontSize: '0.96rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '14px' }}>
+                    Associated Detection Alerts ({alerts.length})
                   </h3>
 
                   {alerts.length === 0 ? (
-                    <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.82rem' }}>
                       No active intrusion alerts linked to this host.
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       {alerts.map((al) => (
                         <div
                           key={al.id}
                           style={{
-                            padding: '16px',
-                            borderRadius: '8px',
-                            backgroundColor: 'rgba(18, 27, 40, 0.7)',
-                            border: `1px solid ${getRiskColor(al.severity)}40`
+                            padding: '14px 16px',
+                            borderRadius: '6px',
+                            backgroundColor: '#111724',
+                            border: `1px solid ${getRiskColor(al.severity)}30`
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <span
                                 className="badge"
                                 style={{
-                                  backgroundColor: `${getRiskColor(al.severity)}20`,
+                                  backgroundColor: `${getRiskColor(al.severity)}15`,
                                   color: getRiskColor(al.severity),
-                                  border: `1px solid ${getRiskColor(al.severity)}`
+                                  border: `1px solid ${getRiskColor(al.severity)}35`,
+                                  fontSize: '0.66rem',
+                                  padding: '1px 6px'
                                 }}
                               >
                                 {al.severity?.toUpperCase()}
                               </span>
-                              <span style={{ fontWeight: '700', fontSize: '0.94rem', color: 'var(--text-primary)' }}>
+                              <span style={{ fontWeight: '600', fontSize: '0.88rem', color: 'var(--text-primary)' }}>
                                 {al.title}
                               </span>
                             </div>
-                            <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                               {al.created_at}
                             </span>
                           </div>
 
-                          <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                          <p style={{ fontSize: '0.80rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
                             {al.description}
                           </p>
 
-                          <div style={{ display: 'flex', gap: '16px', fontSize: '0.76rem', color: 'var(--text-muted)' }}>
+                          <div style={{ display: 'flex', gap: '14px', fontSize: '0.74rem', color: 'var(--text-muted)' }}>
                             <span>Category: <strong style={{ color: 'var(--text-primary)' }}>{al.detection_category}</strong></span>
                             <span>Engine: <strong style={{ color: 'var(--text-primary)', textTransform: 'uppercase' }}>{al.detection_source}</strong></span>
                             <span>Status: <strong style={{ color: 'var(--text-primary)' }}>{al.status}</strong></span>
@@ -539,10 +545,10 @@ export const DeviceInvestigationModal = ({ ipAddress, onClose }) => {
 
               {/* TAB 4: PORT AUDIT & PROFILE */}
               {activeTab === 'profile' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <div className="glass-card">
-                    <h4 style={{ fontSize: '0.96rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '14px' }}>
-                      Verified Open Ports & Services
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div className="glass-card" style={{ padding: '18px' }}>
+                    <h4 style={{ fontSize: '0.90rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '12px' }}>
+                      Listening Ports & Fingerprinted Services
                     </h4>
 
                     {device?.open_ports && device.open_ports.length > 0 ? (
@@ -558,13 +564,13 @@ export const DeviceInvestigationModal = ({ ipAddress, onClose }) => {
                         <tbody>
                           {device.open_ports.map((p, i) => (
                             <tr key={i}>
-                              <td style={{ fontFamily: 'var(--font-mono)', fontWeight: '700', color: 'var(--xc-aqua)' }}>
+                              <td style={{ fontFamily: 'var(--font-mono)', fontWeight: '600', color: '#38BDF8' }}>
                                 {p.port}
                               </td>
                               <td>{p.protocol || 'TCP'}</td>
                               <td>{p.service || 'unknown'}</td>
                               <td>
-                                <span style={{ color: 'var(--xc-teal)', fontSize: '0.75rem' }}>
+                                <span style={{ color: '#10B981', fontSize: '0.72rem', fontWeight: '600' }}>
                                   ● OPEN
                                 </span>
                               </td>
@@ -573,19 +579,19 @@ export const DeviceInvestigationModal = ({ ipAddress, onClose }) => {
                         </tbody>
                       </table>
                     ) : (
-                      <div style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                      <div style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.80rem' }}>
                         No listening ports verified on this host.
                       </div>
                     )}
                   </div>
 
                   {device?.suspicious_indicators && device.suspicious_indicators.length > 0 && (
-                    <div className="glass-card">
-                      <h4 style={{ fontSize: '0.96rem', fontWeight: '700', color: '#F5C451', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <AlertTriangle size={16} />
-                        <span>Suspicious Security Indicators</span>
+                    <div className="glass-card" style={{ padding: '18px' }}>
+                      <h4 style={{ fontSize: '0.90rem', fontWeight: '700', color: '#F59E0B', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <AlertTriangle size={15} />
+                        <span>Security Risk Indicators</span>
                       </h4>
-                      <ul style={{ paddingLeft: '20px', fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                      <ul style={{ paddingLeft: '18px', fontSize: '0.80rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
                         {device.suspicious_indicators.map((ind, i) => (
                           <li key={i}>{ind}</li>
                         ))}

@@ -62,13 +62,31 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
-// Role-based root dashboard router
-const DashboardRouter = () => {
+// Strict Guard: Admin/Analyst only. Viewers are redirected to /user
+const AdminRoute = ({ children }) => {
   const { role } = useAuth();
   if (role === 'viewer') {
-    return <UserDashboardPage />;
+    return <Navigate to="/user" replace />;
   }
-  return <AdminDashboardPage />;
+  return children;
+};
+
+// Strict Guard: Standard User (viewer) only. Admins are redirected to /admin
+const UserRoute = ({ children }) => {
+  const { role } = useAuth();
+  if (role === 'admin' || role === 'analyst') {
+    return <Navigate to="/admin" replace />;
+  }
+  return children;
+};
+
+// Role-based root redirector
+const RootRedirect = () => {
+  const { role } = useAuth();
+  if (role === 'viewer') {
+    return <Navigate to="/user" replace />;
+  }
+  return <Navigate to="/admin" replace />;
 };
 
 export default function App() {
@@ -96,9 +114,23 @@ export default function App() {
                 </ProtectedRoute>
               }
             >
-              <Route index element={<DashboardRouter />} />
-              <Route path="admin" element={<AdminDashboardPage />} />
-              <Route path="user" element={<UserDashboardPage />} />
+              <Route index element={<RootRedirect />} />
+              <Route
+                path="admin"
+                element={
+                  <AdminRoute>
+                    <AdminDashboardPage />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="user"
+                element={
+                  <UserRoute>
+                    <UserDashboardPage />
+                  </UserRoute>
+                }
+              />
             </Route>
 
             {/* Fallback to root */}
@@ -109,3 +141,4 @@ export default function App() {
     </BrowserRouter>
   );
 }
+

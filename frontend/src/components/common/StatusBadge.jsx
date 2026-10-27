@@ -4,18 +4,18 @@ export const StatusBadge = ({ status }) => {
   const st = (status || 'unknown').toLowerCase();
 
   const styles = {
-    new: { color: 'var(--xc-violet)', bg: 'rgba(114, 110, 255, 0.15)', border: 'var(--xc-violet)' },
-    acknowledged: { color: 'var(--xc-aqua)', bg: 'rgba(89, 255, 231, 0.15)', border: 'var(--xc-aqua)' },
-    investigating: { color: 'var(--sev-medium)', bg: 'var(--sev-medium-bg)', border: 'var(--sev-medium)' },
-    contained: { color: '#FFA726', bg: 'rgba(255, 167, 38, 0.15)', border: '#FFA726' },
-    resolved: { color: 'var(--xc-teal)', bg: 'rgba(8, 198, 172, 0.15)', border: 'var(--xc-teal)' },
-    closed: { color: 'var(--text-muted)', bg: 'rgba(132, 146, 163, 0.12)', border: 'var(--border-color)' },
-    online: { color: 'var(--xc-teal)', bg: 'rgba(8, 198, 172, 0.15)', border: 'var(--xc-teal)' },
-    degraded: { color: 'var(--sev-medium)', bg: 'var(--sev-medium-bg)', border: 'var(--sev-medium)' },
-    offline: { color: 'var(--sev-critical)', bg: 'var(--sev-critical-bg)', border: 'var(--sev-critical)' },
-    active: { color: 'var(--xc-teal)', bg: 'rgba(8, 198, 172, 0.15)', border: 'var(--xc-teal)' },
-    inactive: { color: 'var(--text-disabled)', bg: 'rgba(82, 97, 115, 0.15)', border: 'var(--border-color)' }
-  }[st] || { color: 'var(--text-muted)', bg: 'rgba(132, 146, 163, 0.15)', border: 'var(--border-color)' };
+    new: { color: '#818CF8', bg: 'rgba(79, 70, 229, 0.12)', border: 'rgba(79, 70, 229, 0.3)' },
+    acknowledged: { color: '#38BDF8', bg: 'rgba(2, 132, 199, 0.12)', border: 'rgba(2, 132, 199, 0.3)' },
+    investigating: { color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.12)', border: 'rgba(245, 158, 11, 0.3)' },
+    contained: { color: '#F97316', bg: 'rgba(249, 115, 22, 0.12)', border: 'rgba(249, 115, 22, 0.3)' },
+    resolved: { color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)', border: 'rgba(16, 185, 129, 0.3)' },
+    closed: { color: '#94A3B8', bg: 'rgba(148, 163, 184, 0.12)', border: 'rgba(148, 163, 184, 0.2)' },
+    online: { color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)', border: 'rgba(16, 185, 129, 0.3)' },
+    degraded: { color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.12)', border: 'rgba(245, 158, 11, 0.3)' },
+    offline: { color: '#EF4444', bg: 'rgba(239, 68, 68, 0.12)', border: 'rgba(239, 68, 68, 0.3)' },
+    active: { color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)', border: 'rgba(16, 185, 129, 0.3)' },
+    inactive: { color: '#64748B', bg: 'rgba(100, 116, 139, 0.12)', border: 'rgba(100, 116, 139, 0.2)' }
+  }[st] || { color: '#94A3B8', bg: 'rgba(148, 163, 184, 0.12)', border: '#222E42' };
 
   return (
     <span

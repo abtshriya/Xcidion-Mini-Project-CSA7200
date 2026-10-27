@@ -78,6 +78,22 @@ async def start_authorized_scan(
     )
     return job
 
+@router.post("/scan-all", response_model=ScanJobResponse)
+async def scan_all_network_systems(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Initiates an authorized live threat & exposure scan across ALL monitored systems.
+    Accessible to both Administrators and Standard Users.
+    """
+    job = await NetworkScannerService.execute_scan(
+        db=db,
+        target_subnet="all",
+        initiated_by=current_user.username
+    )
+    return job
+
 @router.get("/jobs", response_model=List[ScanJobResponse])
 def list_scan_jobs(
     db: Session = Depends(get_db),

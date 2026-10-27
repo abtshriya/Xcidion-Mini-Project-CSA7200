@@ -238,10 +238,23 @@ class ApiClient {
     return this.request('/rules');
   }
 
+  async createRule(payload) {
+    return this.request('/rules', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  }
+
   async updateRule(id, payload) {
     return this.request(`/rules/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(payload)
+    });
+  }
+
+  async deleteRule(id) {
+    return this.request(`/rules/${id}`, {
+      method: 'DELETE'
     });
   }
 
@@ -338,6 +351,12 @@ class ApiClient {
     return this.request('/scanning/start', {
       method: 'POST',
       body: JSON.stringify(payload)
+    });
+  }
+
+  async scanAllSystems() {
+    return this.request('/scanning/scan-all', {
+      method: 'POST'
     });
   }
 

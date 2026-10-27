@@ -6,8 +6,8 @@ export const LoadingSpinner = ({ message = 'Loading records...' }) => (
       style={{
         width: '36px',
         height: '36px',
-        border: '3px solid var(--border-color)',
-        borderTopColor: 'var(--xc-aqua)',
+        border: '3px solid #1E2838',
+        borderTopColor: '#4F46E5',
         borderRadius: '50%',
         animation: 'spin 0.8s linear infinite'
       }}

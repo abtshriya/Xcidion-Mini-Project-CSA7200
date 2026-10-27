@@ -16,6 +16,40 @@ router = APIRouter(prefix="/rules", tags=["Detection Rules"])
 def get_rules(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return db.query(DetectionRule).all()
 
+@router.post("", response_model=RuleResponse)
+def create_rule(
+    data: RuleCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role(["admin"]))
+):
+    existing = db.query(DetectionRule).filter(DetectionRule.id == data.id).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Rule with this ID already exists")
+
+    rule = DetectionRule(
+        id=data.id,
+        name=data.name,
+        description=data.description,
+        category=data.category,
+        severity=data.severity.lower(),
+        configuration=data.configuration or {},
+        enabled=data.enabled,
+        version=data.version
+    )
+    db.add(rule)
+    db.add(AuditLog(
+        user_id=current_user.id,
+        username=current_user.username,
+        action="rule_creation",
+        resource_type="detection_rule",
+        resource_id=data.id,
+        outcome="success",
+        metadata_json={"name": data.name, "category": data.category, "severity": data.severity}
+    ))
+    db.commit()
+    db.refresh(rule)
+    return rule
+
 @router.get("/{rule_id}", response_model=RuleResponse)
 def get_rule_by_id(rule_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     rule = db.query(DetectionRule).filter(DetectionRule.id == rule_id).first()
@@ -95,3 +129,25 @@ def test_rule(
         "evidence": matches[0]["evidence"] if matched else None,
         "severity": matches[0]["severity"] if matched else None
     }
+
+@router.delete("/{rule_id}")
+def delete_rule(
+    rule_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role(["admin"]))
+):
+    rule = db.query(DetectionRule).filter(DetectionRule.id == rule_id).first()
+    if not rule:
+        raise HTTPException(status_code=404, detail="Rule not found")
+        
+    db.delete(rule)
+    db.add(AuditLog(
+        user_id=current_user.id,
+        username=current_user.username,
+        action="rule_deletion",
+        resource_type="detection_rule",
+        resource_id=rule_id,
+        outcome="success"
+    ))
+    db.commit()
+    return {"message": f"Rule {rule_id} successfully deleted"}

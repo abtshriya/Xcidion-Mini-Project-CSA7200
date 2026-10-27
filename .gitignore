@@ -71,3 +71,6 @@ desktop.ini
 
 # Podman / Docker
 .podman/
+
+# Scratch & Temporary Testing Files
+scratch/

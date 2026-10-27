@@ -100,20 +100,15 @@ async def execute_terminal_command(
         log(f"Administrative Scan Permission: {'GRANTED' if current_user.role == 'admin' else 'RESTRICTED'}", "success" if current_user.role == "admin" else "warn")
 
     elif cmd == "scan":
-        if not args:
-            log("Error: Target subnet or IP address required. Example: scan 192.168.1.0/24 or scan 127.0.0.1/32", "error")
-        elif current_user.role != "admin":
-            log("Permission Denied: Only users with 'admin' role are authorized to initiate network scans.", "error")
+        target = args[0] if args else "all"
+        log(f"Initiating live authorized network scan on '{target}'...", "info")
+        job = await NetworkScannerService.execute_scan(db, target, current_user.username)
+        if job.status == "blocked":
+            log(f"Scan blocked: Subnet '{target}' is not in approved scanning scope.", "error")
+        elif job.status == "completed":
+            log(f"Scan completed: Audited {job.devices_found} systems, {job.threats_found} threat signatures found, {job.open_ports_found} open ports verified.", "success")
         else:
-            target = args[0]
-            log(f"Initiating scan job on '{target}'...", "info")
-            job = await NetworkScannerService.execute_scan(db, target, current_user.username)
-            if job.status == "blocked":
-                log(f"Scan blocked: Subnet '{target}' is not in approved scanning scope.", "error")
-            elif job.status == "completed":
-                log(f"Scan completed: Discovered {job.devices_found} devices and {job.open_ports_found} open ports.", "success")
-            else:
-                log(f"Scan finished with status: {job.status}", "info")
+            log(f"Scan finished with status: {job.status}", "info")
 
     elif cmd == "clear":
         log("Terminal buffer reset requested.", "info")

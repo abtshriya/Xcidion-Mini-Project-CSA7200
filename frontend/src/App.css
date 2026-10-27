@@ -1,179 +1,175 @@
-/* App-level utility classes and layout helpers */
+/* Professional Engineering Styles & Utility Classes */
 
 .glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  box-shadow: var(--glass-shadow);
+  box-shadow: var(--shadow-sm);
   transition: var(--transition);
 }
 
 .glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  box-shadow: var(--glass-shadow-sm);
-  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
   transition: var(--transition);
 }
 
 .glass-card-interactive {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  box-shadow: var(--glass-shadow-sm);
-  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
   transition: var(--transition);
   cursor: pointer;
 }
 
 .glass-card-interactive:hover {
-  border-color: rgba(89, 255, 231, 0.35);
-  box-shadow: var(--glass-shadow);
-  transform: translateY(-1px);
+  background: var(--bg-elevated);
+  border-color: var(--border-color-hover);
 }
 
 .card {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  box-shadow: var(--glass-shadow-sm);
-  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
   transition: var(--transition);
 }
 
 .card-hover:hover {
-  border-color: rgba(89, 255, 231, 0.35);
-  box-shadow: var(--glass-shadow);
+  background: var(--bg-elevated);
+  border-color: var(--border-color-hover);
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-  font-size: 0.75rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 0.72rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
 .badge-violet {
-  background: rgba(114, 110, 255, 0.16);
-  color: var(--xc-violet);
-  border: 1px solid rgba(114, 110, 255, 0.3);
+  background: rgba(99, 102, 241, 0.12);
+  color: #818CF8;
+  border: 1px solid rgba(99, 102, 241, 0.25);
 }
 
 .badge-aqua {
-  background: rgba(89, 255, 231, 0.14);
-  color: var(--xc-aqua);
-  border: 1px solid rgba(89, 255, 231, 0.3);
+  background: rgba(2, 132, 199, 0.12);
+  color: #38BDF8;
+  border: 1px solid rgba(2, 132, 199, 0.25);
 }
 
 .badge-teal {
-  background: rgba(8, 198, 172, 0.14);
-  color: var(--xc-teal);
-  border: 1px solid rgba(8, 198, 172, 0.3);
+  background: rgba(16, 185, 129, 0.12);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
+/* Authentic Engineering Buttons */
 .btn-primary {
-  background: linear-gradient(135deg, var(--xc-violet), #5854e6);
-  color: #fff;
-  padding: 8px 16px;
+  background: var(--color-primary);
+  color: #FFFFFF;
+  padding: 7px 15px;
   border-radius: var(--radius-sm);
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 0.84rem;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  box-shadow: 0 4px 12px rgba(114, 110, 255, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   transition: var(--transition);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #8481ff, var(--xc-violet));
-  box-shadow: 0 6px 18px rgba(114, 110, 255, 0.35);
+  background: var(--color-primary-hover);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .btn-secondary {
-  background: rgba(24, 35, 49, 0.7);
+  background: var(--bg-elevated);
   color: var(--text-primary);
-  border: 1px solid var(--glass-border);
-  padding: 8px 16px;
+  border: 1px solid var(--border-color);
+  padding: 7px 14px;
   border-radius: var(--radius-sm);
   font-weight: 500;
+  font-size: 0.84rem;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   transition: var(--transition);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: rgba(35, 50, 70, 0.85);
-  border-color: rgba(89, 255, 231, 0.35);
+  background: #1F2A3D;
+  border-color: var(--border-color-hover);
+  color: #FFFFFF;
 }
 
 .btn-teal {
-  background: linear-gradient(135deg, var(--xc-teal), #06a48f);
-  color: #080C12;
-  font-weight: 700;
-  padding: 8px 16px;
+  background: #059669;
+  color: #FFFFFF;
+  font-weight: 500;
+  padding: 7px 14px;
   border-radius: var(--radius-sm);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   transition: var(--transition);
 }
 
 .btn-teal:hover:not(:disabled) {
-  background: linear-gradient(135deg, #0ce9ca, var(--xc-teal));
+  background: #047857;
 }
 
-/* Glass Tables */
+/* Crisp Security Data Tables */
 .glass-table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse;
 }
 
 .glass-table th {
-  background: rgba(14, 21, 31, 0.85);
-  padding: 12px 16px;
+  background: var(--bg-elevated);
+  padding: 10px 14px;
   text-align: left;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid var(--glass-border);
+  letter-spacing: 0.4px;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .glass-table td {
-  padding: 14px 16px;
-  font-size: 0.86rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 11px 14px;
+  font-size: 0.84rem;
+  border-bottom: 1px solid var(--border-color);
   color: var(--text-secondary);
-  transition: background 0.15s ease;
+  transition: background 0.12s ease;
 }
 
 .glass-table tr:hover td {
-  background: rgba(114, 110, 255, 0.04);
+  background: rgba(255, 255, 255, 0.02);
 }
 
-/* Terminal Console Styling */
+/* Clean Terminal Window */
 .terminal-window {
-  background: #06090e;
-  border: 1px solid var(--glass-border);
+  background: #070A0F;
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.8), 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
   font-family: var(--font-mono);
   display: flex;
   flex-direction: column;
@@ -181,9 +177,9 @@
 }
 
 .terminal-header {
-  background: #090d14;
+  background: #0D1219;
   padding: 8px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -192,13 +188,13 @@
 .terminal-body {
   padding: 14px;
   overflow-y: auto;
-  font-size: 0.82rem;
+  font-size: 0.80rem;
   line-height: 1.5;
-  color: #c5ced8;
+  color: #C5CED8;
 }
 
-/* Animations */
-@keyframes pulse {
+/* Subtle, authentic pulse indicator */
+@keyframes subtle-pulse {
   0%, 100% {
     opacity: 1;
   }
@@ -208,6 +204,5 @@
 }
 
 .animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: subtle-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
-

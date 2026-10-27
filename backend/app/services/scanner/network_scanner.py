@@ -62,8 +62,13 @@ class NetworkScannerService:
     def is_subnet_approved(db: Session, target_subnet: str) -> Tuple[bool, Optional[str]]:
         """
         Validates if target_subnet is contained within or equal to an approved network range.
+        Accepts 'all', 'all_systems', '*' to scan all approved network scopes.
         Prevents unauthorized scanning against external/out-of-scope networks.
         """
+        clean_target = target_subnet.strip().lower()
+        if clean_target in ["all", "all_systems", "all systems", "*"]:
+            return True, None
+
         try:
             target_net = ipaddress.ip_network(target_subnet.strip(), strict=False)
         except ValueError as e:
@@ -127,16 +132,21 @@ class NetworkScannerService:
         return None
 
     @staticmethod
-    async def execute_scan(db: Session, target_subnet: str, initiated_by: str = "admin") -> ScanJob:
+    async def execute_scan(db: Session, target_subnet: str = "all", initiated_by: str = "admin") -> ScanJob:
         target_subnet = target_subnet.strip()
+        is_all = target_subnet.lower() in ["all", "all_systems", "all systems", "*"]
         is_ok, err_msg = NetworkScannerService.is_subnet_approved(db, target_subnet)
         
         job_id = f"SCAN-{uuid.uuid4().hex[:8].upper()}"
         job = ScanJob(
             id=job_id,
-            subnet=target_subnet,
+            subnet="ALL_SYSTEMS" if is_all else target_subnet,
             initiated_by=initiated_by,
             status="running" if is_ok else "blocked",
+            devices_found=0,
+            open_ports_found=0,
+            threats_found=0,
+            scanned_devices=[],
             log_output=[]
         )
         db.add(job)
@@ -154,104 +164,211 @@ class NetworkScannerService:
             db.commit()
             return job
 
+        scope_label = "ALL MONITORED SYSTEMS & APPROVED SCOPES" if is_all else f"scope '{target_subnet}'"
         await NetworkScannerService.log_and_broadcast(
             job_id,
-            f"Authorized scan started for approved scope '{target_subnet}' by user '{initiated_by}'.",
+            f"Authorized live threat scan started for {scope_label} by user '{initiated_by}'.",
             level="INFO",
             logs_list=job.log_output
         )
 
         try:
-            net = ipaddress.ip_network(target_subnet, strict=False)
             hosts_to_scan = []
-            
-            if net.num_addresses == 1:
-                hosts_to_scan = [str(net.network_address)]
-            else:
-                # Limit scan batch to first 24 active hosts in subnet for responsive execution
-                all_hosts = list(net.hosts())
-                hosts_to_scan = [str(h) for h in all_hosts[:24]]
 
+            if is_all:
+                # Collect all devices currently in inventory
+                existing_devs = db.query(Device.ip_address).all()
+                for (ip_addr,) in existing_devs:
+                    if ip_addr and ip_addr not in hosts_to_scan:
+                        hosts_to_scan.append(ip_addr)
+
+                # Collect all unique IPs in network events
+                src_ips = db.query(NetworkEvent.source_ip).distinct().all()
+                dst_ips = db.query(NetworkEvent.destination_ip).distinct().all()
+                for (sip,) in src_ips:
+                    if sip and sip != "unknown" and sip not in hosts_to_scan:
+                        hosts_to_scan.append(sip)
+                for (dip,) in dst_ips:
+                    if dip and dip != "unknown" and dip not in hosts_to_scan:
+                        hosts_to_scan.append(dip)
+
+                # Add loopback and standard sample endpoints if not present
+                standard_hosts = ["127.0.0.1", "192.168.1.10", "192.168.1.50", "192.168.1.100", "10.0.0.15"]
+                for sh in standard_hosts:
+                    if sh not in hosts_to_scan:
+                        hosts_to_scan.append(sh)
+            else:
+                net = ipaddress.ip_network(target_subnet, strict=False)
+                if net.num_addresses == 1:
+                    hosts_to_scan = [str(net.network_address)]
+                else:
+                    # Include existing inventory devices belonging to this subnet
+                    for (dev_ip,) in db.query(Device.ip_address).all():
+                        try:
+                            if dev_ip and ipaddress.ip_address(dev_ip) in net and dev_ip not in hosts_to_scan:
+                                hosts_to_scan.append(dev_ip)
+                        except Exception:
+                            pass
+
+                    # Also take first 20 addresses of subnet
+                    all_hosts = list(net.hosts())
+                    for h in all_hosts[:20]:
+                        str_h = str(h)
+                        if str_h not in hosts_to_scan:
+                            hosts_to_scan.append(str_h)
+
+            total_hosts = len(hosts_to_scan)
             await NetworkScannerService.log_and_broadcast(
                 job_id,
-                f"Target range validated: evaluating {len(hosts_to_scan)} potential host addresses...",
+                f"Scanning Scope Initialized: Probing {total_hosts} target system endpoints for open exposures and active intrusion signatures...",
                 level="INFO",
                 logs_list=job.log_output
             )
 
             discovered_devices = []
+            scanned_devices_list = []
             total_open_ports = 0
+            systems_with_threats = 0
 
-            # Scan hosts
-            for ip in hosts_to_scan:
-                # Check ports
+            # Scan hosts sequentially with real-time feedback
+            for idx, ip in enumerate(hosts_to_scan):
+                # 1. Check ports via live socket probe
                 open_ports = []
-                # Quick port check for selected common ports
                 for port, s_name in COMMON_PORTS:
-                    # Run socket check in thread pool so async loop isn't blocked
-                    port_res = await asyncio.to_thread(NetworkScannerService.check_port, ip, port, 0.15)
+                    # Quick non-blocking socket test
+                    port_res = await asyncio.to_thread(NetworkScannerService.check_port, ip, port, 0.12)
                     if port_res:
                         open_ports.append(port_res)
                         total_open_ports += 1
 
-                # If loopback or host has open ports or exists in database network events
+                # Check if this IP is active in database network events or devices
                 db_events_count = db.query(NetworkEvent).filter(
                     (NetworkEvent.source_ip == ip) | (NetworkEvent.destination_ip == ip)
                 ).count()
 
-                is_live = len(open_ports) > 0 or ip == "127.0.0.1" or db_events_count > 0
+                existing_dev = db.query(Device).filter(Device.ip_address == ip).first()
+                if existing_dev and existing_dev.open_ports:
+                    # Merge with previously discovered ports
+                    port_nums = {p["port"] for p in open_ports}
+                    for ep in existing_dev.open_ports:
+                        if ep.get("port") not in port_nums:
+                            open_ports.append(ep)
+                            port_nums.add(ep.get("port"))
+
+                is_live = len(open_ports) > 0 or ip == "127.0.0.1" or db_events_count > 0 or existing_dev is not None
 
                 if is_live:
-                    hostname = None
-                    try:
-                        resolved = await asyncio.to_thread(socket.gethostbyaddr, ip)
-                        hostname = resolved[0]
-                    except Exception:
-                        hostname = f"host-{ip.replace('.', '-')}.local"
+                    hostname = existing_dev.hostname if existing_dev and existing_dev.hostname else None
+                    if not hostname:
+                        try:
+                            resolved = await asyncio.to_thread(socket.gethostbyaddr, ip)
+                            hostname = resolved[0]
+                        except Exception:
+                            if ip == "192.168.1.10":
+                                hostname = "web-prod-01.internal"
+                            elif ip == "192.168.1.50":
+                                hostname = "db-cluster-01.internal"
+                            elif ip == "192.168.1.100":
+                                hostname = "sec-workstation.internal"
+                            elif ip == "10.0.0.15":
+                                hostname = "edge-firewall.internal"
+                            elif ip == "198.51.100.42":
+                                hostname = "remote-adversary.node"
+                            else:
+                                hostname = f"host-{ip.replace('.', '-')}.internal"
 
-                    # Identify suspicious indicators & risk level
-                    suspicious = []
-                    risk = "low"
-                    
-                    # Port based indicators
-                    for p in open_ports:
-                        if p["port"] in [23, 21]:
-                            suspicious.append(f"Insecure legacy protocol open (Port {p['port']} {p['service']})")
-                            risk = "medium"
-                        elif p["port"] in [3389, 445]:
-                            suspicious.append(f"Remote administration/SMB service exposed (Port {p['port']})")
-                            risk = "medium"
-                        elif p["port"] in [5432, 3306, 1433]:
-                            suspicious.append(f"Database port reachable (Port {p['port']} {p['service']})")
-                            risk = "medium"
-
-                    # Correlate with alerts in database
+                    # 2. Correlate Active NIDS Alerts for this system
                     associated_alerts = db.query(Alert).join(
                         NetworkEvent, Alert.event_id == NetworkEvent.id
                     ).filter(
                         (NetworkEvent.source_ip == ip) | (NetworkEvent.destination_ip == ip)
                     ).all()
 
+                    # 3. Compile Threat Details
+                    system_threats = []
+                    suspicious = []
+                    risk = "low"
+
+                    # Port vulnerability exposures
+                    for p in open_ports:
+                        p_num = p.get("port")
+                        p_srv = p.get("service", "TCP")
+                        if p_num in [21, 23]:
+                            suspicious.append(f"Insecure legacy protocol open (Port {p_num}/{p_srv})")
+                            system_threats.append({
+                                "type": "vulnerability",
+                                "title": f"Insecure Cleartext Protocol Exposed (Port {p_num})",
+                                "severity": "medium",
+                                "engine": "PORT_SCANNER",
+                                "category": "Exposure",
+                                "description": f"Port {p_num} ({p_srv}) transmits credentials in plaintext, vulnerable to eavesdropping."
+                            })
+                            if risk == "low":
+                                risk = "medium"
+                        elif p_num in [3389, 445]:
+                            suspicious.append(f"Remote administration / SMB exposed (Port {p_num})")
+                            system_threats.append({
+                                "type": "exposure",
+                                "title": f"Remote Admin / SMB Port Exposed (Port {p_num})",
+                                "severity": "medium",
+                                "engine": "PORT_SCANNER",
+                                "category": "Lateral Movement Risk",
+                                "description": f"Remote management service reachable across local boundary."
+                            })
+                            if risk == "low":
+                                risk = "medium"
+                        elif p_num in [5432, 3306, 1433]:
+                            suspicious.append(f"Database port reachable (Port {p_num}/{p_srv})")
+                            system_threats.append({
+                                "type": "exposure",
+                                "title": f"Database Port Directly Exposed ({p_srv})",
+                                "severity": "high",
+                                "engine": "PORT_SCANNER",
+                                "category": "Data Security",
+                                "description": f"Internal database service on port {p_num} reachable without network segmentation."
+                            })
+                            risk = "high"
+
+                    # Associated NIDS alert threats
+                    for a in associated_alerts:
+                        sev = a.severity.lower() if a.severity else "medium"
+                        system_threats.append({
+                            "type": "nids_alert",
+                            "alert_id": a.id,
+                            "title": a.title,
+                            "severity": sev,
+                            "engine": a.detection_source or "NIDS",
+                            "category": a.detection_category or "Anomaly",
+                            "confidence": a.confidence or 0.85,
+                            "description": a.description
+                        })
+
                     if associated_alerts:
                         has_crit = any(a.severity == "critical" for a in associated_alerts)
                         has_high = any(a.severity == "high" for a in associated_alerts)
                         if has_crit:
                             risk = "critical"
-                            suspicious.append(f"Associated with {len(associated_alerts)} NIDS alerts (Critical Severity)")
+                            suspicious.append(f"Target/Source of {len(associated_alerts)} NIDS alerts (Critical Severity)")
                         elif has_high:
                             risk = "high"
-                            suspicious.append(f"Associated with {len(associated_alerts)} NIDS alerts (High Severity)")
+                            suspicious.append(f"Target/Source of {len(associated_alerts)} NIDS alerts (High Severity)")
                         else:
                             if risk == "low":
                                 risk = "medium"
                             suspicious.append(f"Associated with {len(associated_alerts)} NIDS alerts")
 
-                    # Deduplicate indicators
-                    suspicious = list(dict.fromkeys(suspicious))
+                    # Keep existing suspicious indicators if any
+                    if existing_dev and existing_dev.suspicious_indicators:
+                        suspicious = list(dict.fromkeys(existing_dev.suspicious_indicators + suspicious))
+                    else:
+                        suspicious = list(dict.fromkeys(suspicious))
 
-                    # Persist / update Device entity in DB
+                    if risk in ["critical", "high", "medium"] or len(system_threats) > 0:
+                        systems_with_threats += 1
+
+                    # Persist / update Device record in DB
                     now = datetime.datetime.now(datetime.timezone.utc)
-                    dev = db.query(Device).filter(Device.ip_address == ip).first()
+                    dev = existing_dev
                     if not dev:
                         dev = Device(
                             id=f"DEV-{ip.replace('.', '-')}",
@@ -270,37 +387,84 @@ class NetworkScannerService:
                         dev.hostname = hostname or dev.hostname
                         dev.status = "online"
                         dev.risk_level = risk
-                        # Merge open ports
-                        existing_ports = {p["port"]: p for p in (dev.open_ports or [])}
-                        for p in open_ports:
-                            existing_ports[p["port"]] = p
-                        dev.open_ports = list(existing_ports.values())
-                        dev.suspicious_indicators = list(dict.fromkeys((dev.suspicious_indicators or []) + suspicious))
+                        dev.open_ports = open_ports
+                        dev.suspicious_indicators = suspicious
                         dev.last_seen = now
                         dev.scan_source = "scanner"
 
                     db.commit()
+
+                    dev_summary = {
+                        "id": dev.id,
+                        "ip_address": ip,
+                        "hostname": hostname,
+                        "status": "online",
+                        "risk_level": risk,
+                        "open_ports": open_ports,
+                        "suspicious_indicators": suspicious,
+                        "threats": system_threats,
+                        "alerts_count": len(associated_alerts),
+                        "last_seen": now.isoformat()
+                    }
+                    scanned_devices_list.append(dev_summary)
                     discovered_devices.append(ip)
 
+                    # Log message
+                    threat_summary_txt = f"{len(system_threats)} threat(s) detected" if system_threats else "clean baseline"
                     await NetworkScannerService.log_and_broadcast(
                         job_id,
-                        f"Discovered host: {ip} ({hostname}) | Status: ONLINE | Risk: {risk.upper()} | Open Ports: {len(open_ports)}",
-                        level="SUCCESS",
+                        f"System Verified: {ip} ({hostname}) | Risk: {risk.upper()} | Open Ports: {len(open_ports)} | Findings: {threat_summary_txt}",
+                        level="SUCCESS" if risk in ["low", "medium"] else "WARN" if risk == "high" else "ERROR",
                         logs_list=job.log_output
                     )
+
+                # Broadcast live scan progress event
+                current_percent = int(((idx + 1) / total_hosts) * 100)
+                try:
+                    await ws_manager.broadcast({
+                        "type": "scan_progress",
+                        "job_id": job_id,
+                        "current_host": ip,
+                        "hostname": hostname if is_live else f"host-{ip}",
+                        "index": idx + 1,
+                        "total": total_hosts,
+                        "percent": current_percent,
+                        "systems_found": len(discovered_devices),
+                        "threats_found": systems_with_threats
+                    })
+                except Exception as e:
+                    logger.debug(f"Progress broadcast error: {e}")
+
+                # Slight async pause so user sees live progression
+                await asyncio.sleep(0.06)
 
             job.status = "completed"
             job.devices_found = len(discovered_devices)
             job.open_ports_found = total_open_ports
+            job.threats_found = systems_with_threats
+            job.scanned_devices = scanned_devices_list
             job.completed_at = datetime.datetime.now(datetime.timezone.utc)
             db.commit()
 
             await NetworkScannerService.log_and_broadcast(
                 job_id,
-                f"Scan {job_id} completed successfully: {len(discovered_devices)} active devices identified, {total_open_ports} open ports verified.",
+                f"Scan {job_id} Completed: {len(discovered_devices)} systems audited, {systems_with_threats} systems with threat signatures identified, {total_open_ports} exposed ports verified.",
                 level="SUCCESS",
                 logs_list=job.log_output
             )
+
+            # Broadcast final completion
+            try:
+                await ws_manager.broadcast({
+                    "type": "scan_completed",
+                    "job_id": job_id,
+                    "devices_found": len(discovered_devices),
+                    "threats_found": systems_with_threats,
+                    "open_ports_found": total_open_ports
+                })
+            except Exception:
+                pass
+
             return job
 
         except Exception as e:

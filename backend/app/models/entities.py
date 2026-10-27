@@ -228,6 +228,8 @@ class ScanJob(Base):
     status = Column(String(32), default="running", nullable=False)  # running, completed, failed, blocked
     devices_found = Column(Integer, default=0, nullable=False)
     open_ports_found = Column(Integer, default=0, nullable=False)
+    threats_found = Column(Integer, default=0, nullable=False)
+    scanned_devices = Column(JSON, default=list)
     log_output = Column(JSON, default=list)  # [{"timestamp": "...", "level": "INFO", "message": "..."}]
     created_at = Column(DateTime, default=utcnow, nullable=False)
     completed_at = Column(DateTime, nullable=True)

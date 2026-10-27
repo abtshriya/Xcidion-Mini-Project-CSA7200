@@ -237,7 +237,7 @@ export const LiveTerminal = ({ initialSubnet = '', onDeviceSelected }) => {
         style={{
           padding: '6px 14px',
           backgroundColor: '#0a0f17',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+          borderBottom: '1px solid #1E2838',
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
@@ -245,15 +245,15 @@ export const LiveTerminal = ({ initialSubnet = '', onDeviceSelected }) => {
           fontSize: '0.75rem'
         }}
       >
-        <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>Quick Commands:</span>
+        <span style={{ color: 'var(--text-muted)', fontSize: '0.70rem', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: '600' }}>Commands:</span>
         {['status', 'sensors', 'devices', 'alerts', 'subnets', 'help'].map((cmd) => (
           <button
             key={cmd}
             onClick={() => handleQuickCommand(cmd)}
             style={{
-              background: 'rgba(114, 110, 255, 0.12)',
-              border: '1px solid rgba(114, 110, 255, 0.25)',
-              color: 'var(--xc-aqua)',
+              background: '#131A26',
+              border: '1px solid #222E42',
+              color: '#94A3B8',
               padding: '2px 8px',
               borderRadius: '4px',
               cursor: 'pointer',
@@ -270,7 +270,7 @@ export const LiveTerminal = ({ initialSubnet = '', onDeviceSelected }) => {
       <div className="terminal-body" style={{ flex: 1 }}>
         {logs.length === 0 ? (
           <div style={{ color: 'var(--text-muted)', fontStyle: 'italic', padding: '20px', textAlign: 'center' }}>
-            Terminal buffer empty. Waiting for real network packets, sensor telemetry, or command execution...
+            Terminal buffer empty. Waiting for network flows, sensor telemetry, or command execution...
           </div>
         ) : (
           logs.map((log) => (
@@ -281,11 +281,11 @@ export const LiveTerminal = ({ initialSubnet = '', onDeviceSelected }) => {
                 gap: '8px',
                 marginBottom: '4px',
                 fontFamily: 'var(--font-mono)',
-                fontSize: '0.81rem',
+                fontSize: '0.80rem',
                 lineHeight: '1.4'
               }}
             >
-              <span style={{ color: 'var(--text-muted)', flexShrink: 0, userSelect: 'none' }}>
+              <span style={{ color: '#475569', flexShrink: 0, userSelect: 'none' }}>
                 [{log.timestamp}]
               </span>
               <span
@@ -302,8 +302,8 @@ export const LiveTerminal = ({ initialSubnet = '', onDeviceSelected }) => {
               <span
                 style={{
                   color: log.level === 'CRITICAL' || log.level === 'ERROR'
-                    ? '#FF4D67'
-                    : (log.level === 'WARN' ? '#F5C451' : (log.level === 'SUCCESS' ? '#59FFE7' : '#E2E8F0')),
+                    ? '#EF4444'
+                    : (log.level === 'WARN' ? '#F59E0B' : (log.level === 'SUCCESS' ? '#10B981' : '#CBD5E1')),
                   wordBreak: 'break-all'
                 }}
               >
@@ -323,26 +323,26 @@ export const LiveTerminal = ({ initialSubnet = '', onDeviceSelected }) => {
           alignItems: 'center',
           padding: '8px 12px',
           backgroundColor: '#090d14',
-          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+          borderTop: '1px solid #1E2838',
           gap: '8px'
         }}
       >
-        <span style={{ color: 'var(--xc-aqua)', fontFamily: 'var(--font-mono)', fontWeight: '700' }}>
+        <span style={{ color: '#10B981', fontFamily: 'var(--font-mono)', fontWeight: '700', fontSize: '0.82rem' }}>
           xcidion@nids:~$&nbsp;
         </span>
         <input
           type="text"
           value={commandInput}
           onChange={(e) => setCommandInput(e.target.value)}
-          placeholder="Type command (e.g., status, devices, sensors, alerts, scan 192.168.1.0/24)..."
+          placeholder="Type command (e.g. status, devices, sensors, alerts, scan 192.168.1.0/24)..."
           disabled={isExecuting}
           style={{
             flex: 1,
             background: 'transparent',
             border: 'none',
-            color: '#FFFFFF',
+            color: '#F1F5F9',
             fontFamily: 'var(--font-mono)',
-            fontSize: '0.84rem',
+            fontSize: '0.82rem',
             outline: 'none',
             padding: '4px 0'
           }}
@@ -351,16 +351,16 @@ export const LiveTerminal = ({ initialSubnet = '', onDeviceSelected }) => {
           type="submit"
           disabled={!commandInput.trim() || isExecuting}
           style={{
-            background: 'rgba(114, 110, 255, 0.25)',
-            border: '1px solid rgba(114, 110, 255, 0.4)',
-            color: 'var(--xc-aqua)',
+            background: '#1E2838',
+            border: '1px solid #2B3A50',
+            color: '#F1F5F9',
             borderRadius: '4px',
             padding: '4px 10px',
             display: 'flex',
             alignItems: 'center',
             gap: '4px',
             cursor: 'pointer',
-            fontSize: '0.75rem',
+            fontSize: '0.74rem',
             fontFamily: 'var(--font-mono)'
           }}
         >

@@ -387,6 +387,8 @@ class ScanJobResponse(BaseModel):
     status: str
     devices_found: int
     open_ports_found: int
+    threats_found: int = 0
+    scanned_devices: List[Dict[str, Any]] = []
     log_output: List[Dict[str, Any]] = []
     created_at: datetime
     completed_at: Optional[datetime] = None
